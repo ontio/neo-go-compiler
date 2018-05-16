@@ -9,8 +9,8 @@ import (
 	"go/types"
 	"log"
 
-	"neo-go-compiler/vm"
 	"encoding/json"
+	"neo-go-compiler/vm"
 )
 
 const mainIdent = "Main"
@@ -453,7 +453,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitOpcode(c.prog, vm.Odrop)
 			}
 			*/
-			if f.decl.Type.Results == nil{
+			if f.decl.Type.Results == nil {
 				emitOpcode(c.prog, vm.Odrop)
 			}
 		}
@@ -702,9 +702,9 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
 	}
 
 	funcs := MakeAbi(main)
-	abibytes ,err := json.Marshal(funcs)
-	if err != nil{
-		return nil,nil,err
+	abibytes, err := json.Marshal(funcs)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	funUsage := analyzeFuncUsage(info.program.AllPackages)
@@ -739,7 +739,7 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
 
 	c.writeJumps()
 
-	return c.prog, bytes.NewBuffer(abibytes),nil
+	return c.prog, bytes.NewBuffer(abibytes), nil
 }
 
 func (c *codegen) resolveFuncDecls(f *ast.File) {
