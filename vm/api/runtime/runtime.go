@@ -16,9 +16,11 @@ func GetTime() int {
 }
 
 // Notify an event to the VM.
-func Notify(arg interface{}) int {
+/*func Notify(arg interface{}) int {
 	return 0
-}
+}*/
+
+func Notify(arg interface{}){}
 
 // Log intructs the VM to log the given message.
 func Log(message string) {}
