@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"neo-go-compiler/vm"
+	"encoding/json"
 )
 
 const mainIdent = "Main"
@@ -436,11 +437,12 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 
 		// If we are not assigning this function to a variable we need to drop
 		// (cleanup) the top stack item. It's not a void but you get the point \o/.
-		flag := false
+
+		//flag := false
 		if _, ok := c.scope.voidCalls[n]; ok {
 			// Fix bug: if the Call is a void function, it doesn't need a "drop" opcode
 			// loop the func body to find whether it has a "return" statement
-			for _,l := range f.decl.Body.List{
+			/*for _,l := range f.decl.Body.List{
 				switch l.(type){
 				case  *ast.ReturnStmt:
 					flag = true
@@ -450,7 +452,10 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			if flag == true{
 				emitOpcode(c.prog, vm.Odrop)
 			}
-
+			*/
+			if f.decl.Type.Results == nil{
+				emitOpcode(c.prog, vm.Odrop)
+			}
 		}
 		return nil
 
@@ -680,7 +685,7 @@ func (c *codegen) newFunc(decl *ast.FuncDecl) *funcScope {
 }
 
 // CodeGen is the function that compiles the program to bytecode.
-func CodeGen(info *buildInfo) (*bytes.Buffer, error) {
+func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
 	pkg := info.program.Package(info.initialPackage)
 	c := &codegen{
 		buildInfo: info,
@@ -695,6 +700,106 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, error) {
 	if main == nil {
 		log.Fatal("could not find func main. did you forgot to declare it?")
 	}
+
+	funcs := MakeAbi(main)
+	abibytes ,err := json.Marshal(funcs)
+	if err != nil{
+		return nil,nil,err
+	}
+	/*//make abi
+	//step 1. make Main function
+	funcs := Functions{}
+	var fs []Function
+
+	fmain := Function{Name:main.Name.Name}
+	params := make([]Paramster,len(main.Type.Params.List))
+	for i,p := range main.Type.Params.List{
+		param := Paramster{PName:p.Names[0].Name}
+
+		switch t := p.Type.(type){
+		case *ast.Ident:
+			if t.Name == "string"{
+				param.PType = "String"
+			}else{
+				param.PType = t.Name
+			}
+
+		case *ast.ArrayType:
+			param.PType = "ByteArray"
+		}
+
+		params[i] = param
+	}
+	fmain.Parameters = params
+	results := main.Type.Results.List
+	fmt.Println(len(results))
+	if len(results) > 0{
+		switch t:= results[0].Type.(type){
+		case *ast.Ident:
+			if t.Name == "bool"{
+				fmain.Returntype = "Boolean"
+			}
+		default:
+			fmain.Returntype = "unknown"
+		}
+	}
+	fmt.Println(fmain)
+	s,_ := json.Marshal(fmain)
+	fmt.Printf("%s\n",s)
+
+	fs = append(fs,fmain)
+
+	//step 2. Analyze operation
+	for _, statement := range main.Body.List{
+		fn := Function{}
+
+		var method string
+		var params []Paramster
+		switch t:= statement.(type) {
+		case *ast.IfStmt:
+			switch c := t.Cond.(type){
+			case *ast.BinaryExpr:
+				//todo define the "operation"
+				if c.Op == token.EQL && c.X.(*ast.Ident).Name == "operation"{
+					method = strings.Replace(c.Y.(*ast.BasicLit).Value,"\"","",-1)
+				}
+			}
+
+			for _, st := range t.Body.List{
+				switch stt := st.(type){
+				case *ast.AssignStmt:
+
+					switch tae := stt.Rhs[0].(type){
+					case *ast.TypeAssertExpr:
+						//todo defien the "args"
+						if tae.X.(*ast.IndexExpr).X.(*ast.Ident).Name == "args"{
+							param := Paramster{}
+							param.PName = stt.Lhs[0].(*ast.Ident).Name
+							fmt.Printf("Pname is %s\n",param.PName)
+							param.PType = tae.Type.(*ast.Ident).Name
+							params = append(params,param)
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+		fn.Name = method
+		fn.Parameters = params
+		if fn.Name != ""{
+			fs = append(fs,fn)
+		}
+	}
+
+	funcs.Functions = fs
+	s,_ = json.Marshal(funcs)
+	fmt.Println(string(s))
+	//end*/
+
+
 
 	funUsage := analyzeFuncUsage(info.program.AllPackages)
 
@@ -728,7 +833,7 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, error) {
 
 	c.writeJumps()
 
-	return c.prog, nil
+	return c.prog, bytes.NewBuffer(abibytes),nil
 }
 
 func (c *codegen) resolveFuncDecls(f *ast.File) {

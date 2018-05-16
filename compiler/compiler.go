@@ -39,17 +39,17 @@ type buildInfo struct {
 }
 
 // Compile compiles a Go program into bytecode that can run on the NEO virtual machine.
-func Compile(r io.Reader, o *Options) ([]byte, error) {
+func Compile(r io.Reader, o *Options) ([]byte, []byte ,error) {
 	conf := loader.Config{ParserMode: parser.ParseComments}
 	f, err := conf.ParseFile("", r)
 	if err != nil {
-		return nil, err
+		return nil,nil, err
 	}
 	conf.CreateFromFiles("", f)
 
 	prog, err := conf.Load()
 	if err != nil {
-		return nil, err
+		return nil,nil, err
 	}
 
 	ctx := &buildInfo{
@@ -57,12 +57,12 @@ func Compile(r io.Reader, o *Options) ([]byte, error) {
 		program:        prog,
 	}
 
-	buf, err := CodeGen(ctx)
+	buf,abibuf, err := CodeGen(ctx)
 	if err != nil {
-		return nil, err
+		return nil,nil, err
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes(),abibuf.Bytes(), nil
 }
 
 type archive struct {
@@ -86,13 +86,16 @@ func CompileAndSave(src string, o *Options) error {
 	if err != nil {
 		return err
 	}
-	b, err = Compile(bytes.NewReader(b), o)
+	b, abiBytes,err := Compile(bytes.NewReader(b), o)
 	if err != nil {
 		return fmt.Errorf("Error while trying to compile smart contract file: %v", err)
 	}
 	if o.Debug {
 		log.Println(hex.EncodeToString(b))
 	}
+
+	abiout := fmt.Sprintf("%s.%s",o.Outfile,".json")
+	ioutil.WriteFile(abiout, abiBytes, os.ModePerm)
 
 	out := fmt.Sprintf("%s.%s", o.Outfile, o.Ext)
 	return ioutil.WriteFile(out, b, os.ModePerm)
@@ -104,7 +107,7 @@ func DumpOpcode(src string) error {
 	if err != nil {
 		return err
 	}
-	b, err = Compile(bytes.NewReader(b), &Options{})
+	b,_, err = Compile(bytes.NewReader(b), &Options{})
 	if err != nil {
 		return err
 	}
