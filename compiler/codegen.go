@@ -453,7 +453,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitOpcode(c.prog, vm.Odrop)
 			}
 			*/
-			if f.decl.Type.Results == nil {
+			if f.decl.Type.Results != nil {
 				emitOpcode(c.prog, vm.Odrop)
 			}
 		}
