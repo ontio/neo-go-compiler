@@ -8,7 +8,7 @@ import (
 	"math/big"
 
 	"neo-go-compiler/vm"
-	"github.com/CityOfZion/neo-go/pkg/util"
+	"neo-go-compiler/util"
 )
 
 func emit(w *bytes.Buffer, op vm.Opcode, b []byte) error {
@@ -43,7 +43,9 @@ func emitInt(w *bytes.Buffer, i int64) error {
 	}
 
 	bInt := big.NewInt(i)
-	val := util.ArrayReverse(bInt.Bytes())
+
+	//val := util.ArrayReverse(bInt.Bytes())
+	val := util.ConvertBigIntegerToBytes(bInt)
 	return emitBytes(w, val)
 }
 
