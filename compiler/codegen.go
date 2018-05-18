@@ -55,7 +55,8 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 	switch typ := t.Type.Underlying().(type) {
 	case *types.Basic:
 		switch typ.Kind() {
-		case types.Int, types.UntypedInt:
+		//todo test type.Int64
+		case types.Int, types.UntypedInt,types.Int64:
 			val, _ := constant.Int64Val(t.Value)
 			emitInt(c.prog, val)
 		case types.String, types.UntypedString:
@@ -147,6 +148,10 @@ func (c *codegen) convertFuncDecl(file *ast.File, decl *ast.FuncDecl) {
 		f = c.newFunc(decl)
 	}
 	c.scope = f
+	//todo fixme
+	//this function has bugs
+	//1. var a = someFunc()  will judged as void assignment
+	//2. how to solve the  a:= someFunc() ; someFunc()
 	ast.Inspect(decl, c.scope.analyzeVoidCalls) // @OPTIMIZE
 
 	// All globals copied into the scope of the function need to be added
@@ -442,7 +447,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		if _, ok := c.scope.voidCalls[n]; ok {
 			// Fix bug: if the Call is a void function, it doesn't need a "drop" opcode
 			// loop the func body to find whether it has a "return" statement
-			/*for _,l := range f.decl.Body.List{
+/*			for _,l := range f.decl.Body.List{
 				switch l.(type){
 				case  *ast.ReturnStmt:
 					flag = true
@@ -451,8 +456,8 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 
 			if flag == true{
 				emitOpcode(c.prog, vm.Odrop)
-			}
-			*/
+			}*/
+
 			if f.decl.Type.Results != nil {
 				emitOpcode(c.prog, vm.Odrop)
 			}
@@ -601,7 +606,6 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	if !ok {
 		log.Fatalf("the given literal is not of type struct: %v", lit)
 	}
-
 	emitOpcode(c.prog, vm.Onop)
 	emitInt(c.prog, int64(strct.NumFields()))
 	emitOpcode(c.prog, vm.Onewstruct)

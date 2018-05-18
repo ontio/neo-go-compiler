@@ -63,6 +63,16 @@ func (c *funcScope) analyzeVoidCalls(node ast.Node) bool {
 	case *ast.CallExpr:
 		c.voidCalls[n] = true
 		return false
+	case *ast.ValueSpec:
+		//for var (a = somefunction()) case
+		for _, v:= range n.Values{
+			switch v.(type){
+			case *ast.CallExpr:
+				return false
+			}
+		}
+	default:
+		//fmt.Printf("default :%v\n",n)
 	}
 	return true
 }
