@@ -85,13 +85,22 @@ func MakeAbi(main *ast.FuncDecl) Functions {
 					switch tae := stt.Rhs[0].(type) {
 					case *ast.TypeAssertExpr:
 						//todo defien the "args"
-						if tae.X.(*ast.IndexExpr).X.(*ast.Ident).Name == "args" {
-							param := Paramster{}
-							param.PName = stt.Lhs[0].(*ast.Ident).Name
-							param.PType = tae.Type.(*ast.Ident).Name
-							params = append(params, param)
-						}
+						switch tae.X.(type){
+						case *ast.IndexExpr:
+							if tae.X.(*ast.IndexExpr).X.(*ast.Ident).Name == "args" {
+								param := Paramster{}
 
+								switch tae.Type.(type) {
+								case *ast.Ident:
+									param.PName = stt.Lhs[0].(*ast.Ident).Name
+									param.PType = tae.Type.(*ast.Ident).Name
+								case *ast.ArrayType:
+									param.PName = stt.Lhs[0].(*ast.Ident).Name
+									param.PType ="ByteArray"
+								}
+								params = append(params, param)
+							}
+						}
 					}
 
 				}

@@ -506,6 +506,11 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			t := c.typeInfo.Types[n.Index]
 			val, _ := constant.Int64Val(t.Value)
 			c.emitLoadField(int(val))
+
+		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
+			pos := c.scope.loadLocal(n.X.(*ast.Ident).Name)
+			c.emitLoadLocalPos(pos)
+
 		default:
 			ast.Walk(c, n.Index)
 			emitOpcode(c.prog, vm.Opickitem) // just pickitem here
@@ -608,7 +613,9 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	}
 	emitOpcode(c.prog, vm.Onop)
 	emitInt(c.prog, int64(strct.NumFields()))
-	emitOpcode(c.prog, vm.Onewstruct)
+	//emitOpcode(c.prog, vm.Onewstruct)
+	//FIXME for now ,vm doesn't support struct pick/set item,so change it to array type
+	emitOpcode(c.prog, vm.Onewarray)
 	emitOpcode(c.prog, vm.Otoaltstack)
 
 	// We need to locally store all the fields, even if they are not initialized.
