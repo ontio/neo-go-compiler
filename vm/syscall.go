@@ -8,6 +8,8 @@ var Syscalls = map[string]string{
 	"GetExecutingScriptHash": "System.ExecutionEngine.GetExecutingScriptHash",
 	"GetCallingScriptHash":   "System.ExecutionEngine.GetCallingScriptHash",
 	"GetEntryScriptHash":     "System.ExecutionEngine.GetEntryScriptHash",
+	"SerializeContract":     "System.ExecutionEngine.SerializeContract", //temp for test
+	"SerializeTransfer":     "System.ExecutionEngine.SerializeTransfer", //temp for test
 
 	// Storage API
 	"GetContext": "Neo.Storage.GetContext",

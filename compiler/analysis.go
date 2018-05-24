@@ -30,7 +30,7 @@ func typeAndValueForField(fld *types.Var) types.TypeAndValue {
 	switch t := fld.Type().(type) {
 	case *types.Basic:
 		switch t.Kind() {
-		case types.Int:
+		case types.Int,types.Int64:
 			return types.TypeAndValue{
 				Type:  t,
 				Value: constant.MakeInt64(0),
@@ -48,6 +48,16 @@ func typeAndValueForField(fld *types.Var) types.TypeAndValue {
 		default:
 			log.Fatalf("could not initialize struct field %s to zero, type: %s", fld.Name(), t)
 		}
+	case *types.Slice:
+		if t.Elem().String() == "byte"{
+			return types.TypeAndValue{
+				Type: t,
+				Value:constant.MakeFromBytes(nil),
+			}
+		}
+	default:
+		log.Fatalf("could not initialize struct field %s to zero, type: %s", fld.Name(), t)
+
 	}
 	return types.TypeAndValue{}
 }
@@ -201,10 +211,29 @@ func isByteArray(lit *ast.CompositeLit, tInfo *types.Info) bool {
 	return false
 }
 
+func isStructArray(lit *ast.CompositeLit, tInfo *types.Info) bool {
+	if len(lit.Elts) == 0 {
+		return false
+	}
+
+	typ := tInfo.Types[lit.Elts[0]].Type.Underlying()
+	switch typ.(type) {
+	case *types.Struct:
+		return true
+	}
+	return false
+}
+
+
 func isSyscall(name string) bool {
 	_, ok := vm.Syscalls[name]
 	return ok
 }
+
+func isAppcall(name string)bool{
+	return name == "AppCall"
+}
+
 
 // isNoRetSyscall checks if the syscall has a return value.
 func isNoRetSyscall(name string) bool {

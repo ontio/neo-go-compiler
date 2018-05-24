@@ -89,6 +89,12 @@ func emitSyscall(w *bytes.Buffer, api string) error {
 	return emit(w, vm.Osyscall, buf)
 }
 
+//todo add emitAppcall
+func emitAppcall(w *bytes.Buffer) error{
+	return emit(w,vm.Oappcall,nil)
+}
+
+
 func emitCall(w *bytes.Buffer, op vm.Opcode, label int16) error {
 	return emitJmp(w, op, label)
 }

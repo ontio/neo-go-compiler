@@ -72,6 +72,15 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 		default:
 			log.Fatalf("compiler don't know how to convert this basic type: %v", t)
 		}
+	case *types.Struct:
+		//it's struct array sovled outside
+		log.Fatalf("compiler don't know how to convert this constant: %v", t)
+	case *types.Array:
+		log.Fatalf("compiler don't know how to convert this constant: %v", t)
+	case *types.Slice:
+		log.Fatalf("compiler don't know how to convert this constant: %v", t)
+
+
 	default:
 		log.Fatalf("compiler don't know how to convert this constant: %v", t)
 	}
@@ -186,8 +195,8 @@ func (c *codegen) convertFuncDecl(file *ast.File, decl *ast.FuncDecl) {
 		c.emitStoreLocal(l)
 	}
 	// Load in all the global variables in to the scope of the function.
-	// This is not necessary for syscalls.
-	if !isSyscall(f.name) {
+	// This is not necessary for syscalls and appcall.
+	if !isSyscall(f.name) && !isAppcall(f.name) {
 		c.convertGlobals(file)
 	}
 
@@ -328,6 +337,35 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			for i := ln - 1; i >= 0; i-- {
 				c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
 			}
+			//todo support the []struct
+			/*for i := ln - 1; i >= 0; i-- {
+				t := c.typeInfo.Types[n.Elts[i]]
+				switch  t.Type.Underlying().(type){
+				case *types.Basic:
+					c.emitLoadConst(t)
+				case *types.Struct:// []struct
+					strct, ok := t.Type.Underlying().(*types.Struct)
+					if !ok {
+						log.Fatalf("the given literal is not of type struct: %v", n)
+					}
+					fmt.Printf("strct is %v\n",strct)
+
+					//emitInt(c.prog, int64(strct.NumFields()))
+					//emitOpcode(c.prog, vm.Onewstruct)
+					//FIXME for now ,vm doesn't support struct pick/set item,so change it to array type
+					//emitOpcode(c.prog, vm.Onewarray)
+					//emitOpcode(c.prog, vm.Otoaltstack)
+
+					//get the struct var name
+					elem := n.Elts[i].(*ast.Ident)
+					fmt.Printf("elem is %v\n",elem)
+					l := c.scope.loadLocal(elem.Name)
+					fmt.Printf("elem l is %d\n",l)
+					fmt.Printf("c.locals  is %v\n",c.scope.locals)
+					c.emitStoreLocal(l) //store the struct
+
+				}
+			}*/
 			emitInt(c.prog, int64(ln))
 			emitOpcode(c.prog, vm.Opack)
 			return nil
@@ -404,9 +442,15 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			// For now we will assume that there is only 1 argument passed which
 			// will be a basic literal (string kind). This only to handle string
 			// to byte slice conversions. E.G. []byte("foobar")
-			arg := n.Args[0].(*ast.BasicLit)
-			c.emitLoadConst(c.typeInfo.Types[arg])
-			return nil
+			switch n.Args[0].(type){
+			case *ast.BasicLit:
+				arg := n.Args[0].(*ast.BasicLit)
+				c.emitLoadConst(c.typeInfo.Types[arg])
+				return nil
+			case *ast.SelectorExpr:
+				log.Fatalf("could not resolve type %v",n.Args[0] )
+				}
+
 		}
 
 		// Handle the arguments
@@ -436,7 +480,10 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			c.convertBuiltin(n)
 		} else if isSyscall(f.name) {
 			c.convertSyscall(f.name)
-		} else {
+		} else if isAppcall(f.name){
+			//todo modify appcall here
+			c.convertAppcall(f.name)
+		}else {
 			emitCall(c.prog, vm.Ocall, int16(f.label))
 		}
 
@@ -563,6 +610,12 @@ func (c *codegen) convertSyscall(name string) {
 	emitOpcode(c.prog, vm.Onop) // @OPTIMIZE
 }
 
+func (c *codegen) convertAppcall(name string) {
+	emitAppcall(c.prog)
+	emitOpcode(c.prog, vm.Onop) // @OPTIMIZE
+}
+
+
 func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 	var name string
 	switch t := expr.Fun.(type) {
@@ -626,15 +679,22 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 
 		// Fields initialized by the program.
 		for _, field := range lit.Elts {
-			f := field.(*ast.KeyValueExpr)
-			fieldName := f.Key.(*ast.Ident).Name
 
-			if sField.Name() == fieldName {
-				ast.Walk(c, f.Value)
-				pos := indexOfStruct(strct, fieldName)
-				c.emitStoreLocal(pos)
-				fieldAdded = true
-				break
+			switch field.(type){
+			case *ast.KeyValueExpr:
+				f := field.(*ast.KeyValueExpr)
+				fieldName := f.Key.(*ast.Ident).Name
+
+				if sField.Name() == fieldName {
+					ast.Walk(c, f.Value)
+					pos := indexOfStruct(strct, fieldName)
+					c.emitStoreLocal(pos)
+					fieldAdded = true
+					break
+				}
+			case *ast.Ident:
+				//todo resolve the Ident case
+				log.Fatal("can't solvee the field %v\n",field)
 			}
 		}
 		if fieldAdded {

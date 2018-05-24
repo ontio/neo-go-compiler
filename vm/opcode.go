@@ -121,6 +121,7 @@ const (
 	Osetitem   Opcode = 0xC4
 	Onewarray  Opcode = 0xC5 // Pops size from stack and creates a new array with that size, and pushes the array into the stack
 	Onewstruct Opcode = 0xC6
+	Onewmap    Opcode = 0xC7 //new opcode for map
 	Oappend    Opcode = 0xC8
 	Oreverse   Opcode = 0xC9
 	Oremove    Opcode = 0xCA

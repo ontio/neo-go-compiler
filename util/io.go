@@ -7,6 +7,8 @@ import (
 	"io"
 )
 
+//Fixme this file is replace by serialization/serialize.go
+
 // Variable length integer, can be encoded to save space according to the value typed.
 // len 1 uint8
 // len 3 0xfd + uint16
