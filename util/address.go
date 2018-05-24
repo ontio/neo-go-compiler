@@ -1,6 +1,5 @@
 package util
 
-
 import (
 	"crypto/sha256"
 	"errors"
@@ -84,4 +83,3 @@ func AddressFromBase58(encoded string) (Address, error) {
 
 	return ph, nil
 }
-

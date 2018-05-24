@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"neo-go-compiler/vm"
 	"neo-go-compiler/util"
+	"neo-go-compiler/vm"
 )
 
 func emit(w *bytes.Buffer, op vm.Opcode, b []byte) error {
@@ -90,10 +90,9 @@ func emitSyscall(w *bytes.Buffer, api string) error {
 }
 
 //todo add emitAppcall
-func emitAppcall(w *bytes.Buffer) error{
-	return emit(w,vm.Oappcall,nil)
+func emitAppcall(w *bytes.Buffer) error {
+	return emit(w, vm.Oappcall, nil)
 }
-
 
 func emitCall(w *bytes.Buffer, op vm.Opcode, label int16) error {
 	return emitJmp(w, op, label)

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"os"
 	"github.com/urfave/cli"
 	"neo-go-compiler/cli/smartcontract"
+	"os"
 )
-
 
 func main() {
 	ctl := cli.NewApp()

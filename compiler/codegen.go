@@ -56,7 +56,7 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 	case *types.Basic:
 		switch typ.Kind() {
 		//todo test type.Int64
-		case types.Int, types.UntypedInt,types.Int64:
+		case types.Int, types.UntypedInt, types.Int64:
 			val, _ := constant.Int64Val(t.Value)
 			emitInt(c.prog, val)
 		case types.String, types.UntypedString:
@@ -79,7 +79,6 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 		log.Fatalf("compiler don't know how to convert this constant: %v", t)
 	case *types.Slice:
 		log.Fatalf("compiler don't know how to convert this constant: %v", t)
-
 
 	default:
 		log.Fatalf("compiler don't know how to convert this constant: %v", t)
@@ -442,14 +441,14 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			// For now we will assume that there is only 1 argument passed which
 			// will be a basic literal (string kind). This only to handle string
 			// to byte slice conversions. E.G. []byte("foobar")
-			switch n.Args[0].(type){
+			switch n.Args[0].(type) {
 			case *ast.BasicLit:
 				arg := n.Args[0].(*ast.BasicLit)
 				c.emitLoadConst(c.typeInfo.Types[arg])
 				return nil
 			case *ast.SelectorExpr:
-				log.Fatalf("could not resolve type %v",n.Args[0] )
-				}
+				log.Fatalf("could not resolve type %v", n.Args[0])
+			}
 
 		}
 
@@ -480,10 +479,10 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			c.convertBuiltin(n)
 		} else if isSyscall(f.name) {
 			c.convertSyscall(f.name)
-		} else if isAppcall(f.name){
+		} else if isAppcall(f.name) {
 			//todo modify appcall here
 			c.convertAppcall(f.name)
-		}else {
+		} else {
 			emitCall(c.prog, vm.Ocall, int16(f.label))
 		}
 
@@ -494,16 +493,16 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		if _, ok := c.scope.voidCalls[n]; ok {
 			// Fix bug: if the Call is a void function, it doesn't need a "drop" opcode
 			// loop the func body to find whether it has a "return" statement
-/*			for _,l := range f.decl.Body.List{
-				switch l.(type){
-				case  *ast.ReturnStmt:
-					flag = true
-				}
-			}
+			/*			for _,l := range f.decl.Body.List{
+							switch l.(type){
+							case  *ast.ReturnStmt:
+								flag = true
+							}
+						}
 
-			if flag == true{
-				emitOpcode(c.prog, vm.Odrop)
-			}*/
+						if flag == true{
+							emitOpcode(c.prog, vm.Odrop)
+						}*/
 
 			if f.decl.Type.Results != nil {
 				emitOpcode(c.prog, vm.Odrop)
@@ -615,7 +614,6 @@ func (c *codegen) convertAppcall(name string) {
 	emitOpcode(c.prog, vm.Onop) // @OPTIMIZE
 }
 
-
 func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 	var name string
 	switch t := expr.Fun.(type) {
@@ -680,7 +678,7 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 		// Fields initialized by the program.
 		for _, field := range lit.Elts {
 
-			switch field.(type){
+			switch field.(type) {
 			case *ast.KeyValueExpr:
 				f := field.(*ast.KeyValueExpr)
 				fieldName := f.Key.(*ast.Ident).Name
@@ -694,7 +692,7 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 				}
 			case *ast.Ident:
 				//todo resolve the Ident case
-				log.Fatal("can't solvee the field %v\n",field)
+				log.Fatal("can't solvee the field %v\n", field)
 			}
 		}
 		if fieldAdded {

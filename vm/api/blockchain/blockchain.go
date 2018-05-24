@@ -3,7 +3,7 @@ package blockchain
 import "neo-go-compiler/vm/api/types"
 
 // GetHeight returns current block height.
-func GetHeight( ) uint { return 0 }
+func GetHeight() uint { return 0 }
 
 // GetHeader returns specific block height header.
 func GetHeader(height uint) types.Header { return types.Header{} }

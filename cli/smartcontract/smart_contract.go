@@ -77,6 +77,7 @@ func contractCompile(ctx *cli.Context) error {
 
 	return nil
 }
+
 //
 //func testInvoke(ctx *cli.Context) error {
 //	src := ctx.String("in")

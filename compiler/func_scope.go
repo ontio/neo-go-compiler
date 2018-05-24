@@ -65,8 +65,8 @@ func (c *funcScope) analyzeVoidCalls(node ast.Node) bool {
 		return false
 	case *ast.ValueSpec:
 		//for var (a = somefunction()) case
-		for _, v:= range n.Values{
-			switch v.(type){
+		for _, v := range n.Values {
+			switch v.(type) {
 			case *ast.CallExpr:
 				return false
 			}

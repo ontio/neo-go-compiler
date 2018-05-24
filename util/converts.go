@@ -1,6 +1,5 @@
 package util
 
-
 import (
 	"math/big"
 )
@@ -69,4 +68,3 @@ func ConvertBytesToBigInteger(ba []byte) *big.Int {
 	res.SetBytes(bytes)
 	return res
 }
-
