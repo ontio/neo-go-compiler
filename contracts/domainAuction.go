@@ -36,7 +36,6 @@ func bytesEquals(a []byte, b []byte) bool {
 }
 
 func transONT(from []byte, to []byte, amount int64) bool {
-	runtime.Log("====transONT 1")
 
 	transferbytes := system.SerializeTransfer(from, to, amount)
 	runtime.Log("====transONT 3")
@@ -45,10 +44,8 @@ func transONT(from []byte, to []byte, amount int64) bool {
 		"ff00000000000000000000000000000000000001",
 		"transfer",
 		transferbytes)
-	runtime.Log("====transONT 7")
 	runtime.Notify(contractBytes)
 	appcall.AppCall(contractBytes)
-	runtime.Log("====transONT 8")
 
 	return true
 }
@@ -152,7 +149,26 @@ func Main(operation string, args []interface{}) bool {
 
 	}
 
-	runtime.Notify(operation + "no supported!")
+	if operation == "testmap" {
+		if len(args) != 2{
+			runtime.Notify("args count error!")
+		}
+		key := args[0].(string)
+		value := args[1].(string)
+		runtime.Log("===testmap0")
+
+		m := make(map[string]string)
+		runtime.Log("===testmap1")
+		m[key] = value
+		runtime.Log("===testmap2")
+		val2 := m[key]
+		runtime.Log("===testmap3")
+		runtime.Notify(val2)
+		return true
+	}
+
+
+	runtime.Notify("not supported method!")
 
 	return false
 

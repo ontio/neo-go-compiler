@@ -94,7 +94,7 @@ func CompileAndSave(src string, o *Options) error {
 		log.Println(hex.EncodeToString(b))
 	}
 
-	abiout := fmt.Sprintf("%s.%s", o.Outfile, ".json")
+	abiout := fmt.Sprintf("%s.%s", o.Outfile, "json")
 	ioutil.WriteFile(abiout, abiBytes, os.ModePerm)
 
 	out := fmt.Sprintf("%s.%s", o.Outfile, o.Ext)

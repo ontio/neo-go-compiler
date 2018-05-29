@@ -128,6 +128,13 @@ func (c *codegen) emitStoreStructField(i int) {
 	emitOpcode(c.prog, vm.Osetitem)
 }
 
+func (c *codegen) emitStoreMapSet(value int,key int,m int){
+	for _,i := range []int{m,key,value}{
+		c.emitLoadLocalPos(i)
+	}
+	emitOpcode(c.prog, vm.Osetitem)
+}
+
 // convertGlobals will traverse the AST and only convert global declarations.
 // If we call this in convertFuncDecl then it will load all global variables
 // into the scope of the function.
@@ -216,6 +223,10 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 	// var (
 	//     x = 2
 	// )
+
+	case*ast.MapType://make(map[ktype][vtype]) do nothing
+		return nil
+
 	case *ast.GenDecl:
 		for _, spec := range n.Specs {
 			switch t := spec.(type) {
@@ -259,6 +270,19 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				default:
 					log.Fatal("nested selector assigns not supported yet")
 				}
+			case *ast.IndexExpr:  //arr[i] = j or map[key] = value
+				//get value
+				value := n.Rhs[i].(*ast.Ident).Name
+				lv := c.scope.loadLocal(value)
+				//get key / index
+				indexName := n.Lhs[i].(*ast.IndexExpr).Index.(*ast.Ident).Name
+				ipos:= c.scope.loadLocal(indexName)
+
+				//get collection
+				collection := n.Lhs[i].(*ast.IndexExpr).X.(*ast.Ident).Name
+				lc := c.scope.loadLocal(collection)
+
+				c.emitStoreMapSet(lv,ipos,lc)
 			}
 		}
 		return nil
@@ -337,34 +361,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
 			}
 			//todo support the []struct
-			/*for i := ln - 1; i >= 0; i-- {
-				t := c.typeInfo.Types[n.Elts[i]]
-				switch  t.Type.Underlying().(type){
-				case *types.Basic:
-					c.emitLoadConst(t)
-				case *types.Struct:// []struct
-					strct, ok := t.Type.Underlying().(*types.Struct)
-					if !ok {
-						log.Fatalf("the given literal is not of type struct: %v", n)
-					}
-					fmt.Printf("strct is %v\n",strct)
 
-					//emitInt(c.prog, int64(strct.NumFields()))
-					//emitOpcode(c.prog, vm.Onewstruct)
-					//FIXME for now ,vm doesn't support struct pick/set item,so change it to array type
-					//emitOpcode(c.prog, vm.Onewarray)
-					//emitOpcode(c.prog, vm.Otoaltstack)
-
-					//get the struct var name
-					elem := n.Elts[i].(*ast.Ident)
-					fmt.Printf("elem is %v\n",elem)
-					l := c.scope.loadLocal(elem.Name)
-					fmt.Printf("elem l is %d\n",l)
-					fmt.Printf("c.locals  is %v\n",c.scope.locals)
-					c.emitStoreLocal(l) //store the struct
-
-				}
-			}*/
 			emitInt(c.prog, int64(ln))
 			emitOpcode(c.prog, vm.Opack)
 			return nil
@@ -465,6 +462,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitInt(c.prog, 2)
 				emitOpcode(c.prog, vm.Oxswap)
 			}
+			//todo how to solve more than 3 args??
 		}
 
 		// c# compiler adds a NOP (0x61) before every function call. Dont think its relevant
@@ -554,9 +552,10 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			c.emitLoadField(int(val))
 
 		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
-			pos := c.scope.loadLocal(n.X.(*ast.Ident).Name)
+			//pos := c.scope.loadLocal(n.X.(*ast.Ident).Name)
+			pos := c.scope.loadLocal(n.Index.(*ast.Ident).Name)
 			c.emitLoadLocalPos(pos)
-
+			emitOpcode(c.prog, vm.Opickitem)
 		default:
 			ast.Walk(c, n.Index)
 			emitOpcode(c.prog, vm.Opickitem) // just pickitem here
@@ -631,6 +630,13 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 			emitOpcode(c.prog, vm.Osize)
 		} else {
 			emitOpcode(c.prog, vm.Oarraysize)
+		}
+	case "make":
+		l := len(expr.Args)
+		if l == 1{ //make(map[ktype]vtype)
+			emitOpcode(c.prog,vm.Onewmap)
+		}else{ //make([]type,length) or make([]type.length,cap)
+			emitOpcode(c.prog,vm.Onewarray)
 		}
 	case "append":
 		emitOpcode(c.prog, vm.Oappend)
