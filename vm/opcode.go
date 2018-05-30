@@ -125,6 +125,9 @@ const (
 	Oappend    Opcode = 0xC8
 	Oreverse   Opcode = 0xC9
 	Oremove    Opcode = 0xCA
+	OHaskey    Opcode = 0xCB
+	OKeys      Opcode = 0xCC
+	OValues    Opcode = 0xCD
 
 	// exceptions
 	Othrow      Opcode = 0xF0

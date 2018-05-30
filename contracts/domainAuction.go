@@ -164,6 +164,31 @@ func Main(operation string, args []interface{}) bool {
 		val2 := m[key]
 		runtime.Log("===testmap3")
 		runtime.Notify(val2)
+
+		newkey:="testkey"
+		m[newkey]="testvalue"
+		val3 := m[newkey]
+		runtime.Notify(val3)
+
+		for k,v :=range m {
+			runtime.Notify(k)
+			runtime.Notify(v)
+		}
+		return true
+	}
+
+	if operation == "testarray" {
+		arr := make([]string,2)
+		arr[0] = "aaaa"
+		arr[1] = "bbbb"
+		runtime.Notify(arr[0])
+		runtime.Notify(arr[1])
+
+		for i, a:= range arr{
+			runtime.Notify(i)
+			runtime.Notify(a)
+		}
+
 		return true
 	}
 

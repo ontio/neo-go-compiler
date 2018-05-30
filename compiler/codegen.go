@@ -10,7 +10,9 @@ import (
 	"log"
 
 	"encoding/json"
+	"math/rand"
 	"neo-go-compiler/vm"
+	"strconv"
 )
 
 const mainIdent = "Main"
@@ -128,8 +130,8 @@ func (c *codegen) emitStoreStructField(i int) {
 	emitOpcode(c.prog, vm.Osetitem)
 }
 
-func (c *codegen) emitStoreMapSet(value int,key int,m int){
-	for _,i := range []int{m,key,value}{
+func (c *codegen) emitStoreMapSet(value int, key int, m int) {
+	for _, i := range []int{m, key, value} {
 		c.emitLoadLocalPos(i)
 	}
 	emitOpcode(c.prog, vm.Osetitem)
@@ -224,7 +226,88 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 	//     x = 2
 	// )
 
-	case*ast.MapType://make(map[ktype][vtype]) do nothing
+	case *ast.RangeStmt:
+		var (
+			fstart = c.newLabel()
+			fend   = c.newLabel()
+			tmpVal = ""
+		)
+
+		rnd := strconv.Itoa(rand.Intn(100))
+
+		//tmp var names
+		_keys := "_keys_" + rnd
+		_values := "_values_" + rnd
+		_arraylen := "_arraylen_" + rnd
+		_i := "_i_" + rnd
+
+		obj := n.Key.(*ast.Ident).Obj
+		tmpKey := obj.Name
+		collect := obj.Decl.(*ast.AssignStmt)
+
+		for _, l := range collect.Lhs {
+			switch l.(type) {
+			case *ast.Ident:
+				tmpVal = l.(*ast.Ident).Name
+			}
+		}
+
+		m := collect.Rhs[0].(*ast.UnaryExpr).X.(*ast.Ident).Name
+
+		c.emitLoadLocal(m)
+		emitOpcode(c.prog, vm.OKeys)
+		l := c.scope.newLocal(_keys)
+		c.emitStoreLocal(l)
+
+		c.emitLoadLocal(m)
+		emitOpcode(c.prog, vm.OValues)
+		l = c.scope.newLocal(_values)
+		c.emitStoreLocal(l)
+
+		c.emitLoadLocalPos(l)
+		emitOpcode(c.prog, vm.Oarraysize)
+		l = c.scope.newLocal(_arraylen)
+		c.emitStoreLocal(l)
+
+		// initializer
+		emitInt(c.prog, 0)
+		i := c.scope.newLocal(_i)
+		c.emitStoreLocal(i)
+
+		c.setLabel(fstart)
+		c.emitLoadLocal(_i)
+		c.emitLoadLocal(_arraylen)
+		emitOpcode(c.prog, vm.Olt)
+		emitJmp(c.prog, vm.Ojmpifnot, int16(fend))
+
+		k := c.scope.newLocal(tmpKey)
+		c.emitLoadLocal(_keys)
+		c.emitLoadLocal(_i)
+		emitOpcode(c.prog, vm.Opickitem)
+		c.emitStoreLocal(k)
+
+		v := c.scope.newLocal(tmpVal)
+		c.emitLoadLocal(_values)
+		c.emitLoadLocal(_i)
+		emitOpcode(c.prog, vm.Opickitem)
+		c.emitStoreLocal(v)
+
+		//walk body
+		ast.Walk(c, n.Body)
+
+		//walk post
+		c.emitLoadLocal(_i)
+		emitInt(c.prog, 1)
+		emitOpcode(c.prog, vm.Oadd)
+		idx := c.scope.loadLocal(_i)
+		c.emitStoreLocal(idx)
+		// Jump back to condition.
+		emitJmp(c.prog, vm.Ojmp, int16(fstart))
+		c.setLabel(fend)
+
+		return nil
+
+	case *ast.MapType: //make(map[ktype][vtype]) do nothing
 		return nil
 
 	case *ast.GenDecl:
@@ -270,19 +353,45 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				default:
 					log.Fatal("nested selector assigns not supported yet")
 				}
-			case *ast.IndexExpr:  //arr[i] = j or map[key] = value
-				//get value
-				value := n.Rhs[i].(*ast.Ident).Name
-				lv := c.scope.loadLocal(value)
-				//get key / index
-				indexName := n.Lhs[i].(*ast.IndexExpr).Index.(*ast.Ident).Name
-				ipos:= c.scope.loadLocal(indexName)
+			case *ast.IndexExpr: //arr[i] = j or map[key] = value
 
 				//get collection
 				collection := n.Lhs[i].(*ast.IndexExpr).X.(*ast.Ident).Name
 				lc := c.scope.loadLocal(collection)
+				c.emitLoadLocalPos(lc)
 
-				c.emitStoreMapSet(lv,ipos,lc)
+				//get key
+				switch n.Lhs[i].(type) {
+				case *ast.IndexExpr:
+
+					idx := n.Lhs[i].(*ast.IndexExpr).Index
+					switch idx.(type) {
+					case *ast.Ident:
+						indexName := idx.(*ast.Ident).Name
+						ipos := c.scope.loadLocal(indexName)
+						c.emitLoadLocalPos(ipos)
+
+					case *ast.BasicLit:
+						tmp := idx.(*ast.BasicLit)
+						c.emitLoadConst(c.typeInfo.Types[tmp])
+					}
+				case *ast.BasicLit:
+					tmp := n.Lhs[i].(*ast.BasicLit)
+					c.emitLoadConst(c.typeInfo.Types[tmp])
+				}
+
+				//get value
+				switch n.Rhs[i].(type) {
+				case *ast.Ident:
+					value := n.Rhs[i].(*ast.Ident).Name
+					lv := c.scope.loadLocal(value)
+					c.emitLoadLocalPos(lv)
+				case *ast.BasicLit:
+					tmp := n.Rhs[i].(*ast.BasicLit)
+					c.emitLoadConst(c.typeInfo.Types[tmp])
+				}
+				emitOpcode(c.prog, vm.Osetitem)
+				//c.emitStoreMapSet(lv,ipos,lc)
 			}
 		}
 		return nil
@@ -548,8 +657,19 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		switch n.Index.(type) {
 		case *ast.BasicLit:
 			t := c.typeInfo.Types[n.Index]
-			val, _ := constant.Int64Val(t.Value)
-			c.emitLoadField(int(val))
+			switch typ := t.Type.Underlying().(type) {
+			case *types.Basic:
+				switch typ.Kind() {
+				case types.Int, types.UntypedInt, types.Int64:
+					val, _ := constant.Int64Val(t.Value)
+					c.emitLoadField(int(val))
+				case types.String:
+					val := constant.StringVal(t.Value)
+					emitString(c.prog, val)
+					emitOpcode(c.prog, vm.Opickitem)
+
+				}
+			}
 
 		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
 			//pos := c.scope.loadLocal(n.X.(*ast.Ident).Name)
@@ -633,10 +753,10 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		}
 	case "make":
 		l := len(expr.Args)
-		if l == 1{ //make(map[ktype]vtype)
-			emitOpcode(c.prog,vm.Onewmap)
-		}else{ //make([]type,length) or make([]type.length,cap)
-			emitOpcode(c.prog,vm.Onewarray)
+		if l == 1 { //make(map[ktype]vtype)
+			emitOpcode(c.prog, vm.Onewmap)
+		} else { //make([]type,length) or make([]type.length,cap)
+			emitOpcode(c.prog, vm.Onewarray)
 		}
 	case "append":
 		emitOpcode(c.prog, vm.Oappend)

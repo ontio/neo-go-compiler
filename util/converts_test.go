@@ -1,9 +1,9 @@
 package util
 
 import (
-	"testing"
-	"math/big"
 	"fmt"
+	"math/big"
+	"testing"
 )
 
 func TestConvertBigIntegerToBytes(t *testing.T) {
