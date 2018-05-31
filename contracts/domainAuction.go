@@ -200,8 +200,8 @@ func Main(operation string, args []interface{}) bool {
 
 		array := make([]Compsite,2)
 
-		//a := Compsite{name:"aaa",code:1}
-		a := Compsite{"aaa",1}
+		a := Compsite{name:"aaa",code:1}
+		//a := Compsite{"aaa",1}
 		b := Compsite{"bbb",2}
 		runtime.Log("===teststructarray1")
 		array[0] = a
@@ -209,7 +209,7 @@ func Main(operation string, args []interface{}) bool {
 		runtime.Log("===teststructarray2")
 		c := array[0].name
 		runtime.Notify(c)
-		runtime.Notify(array[1].code)
+		runtime.Notify(array[0].code)
 		return true
 
 	}
