@@ -192,6 +192,29 @@ func Main(operation string, args []interface{}) bool {
 		return true
 	}
 
+	if operation == "teststructarray"{
+		type Compsite struct{
+			name string
+			code int
+		}
+
+		array := make([]Compsite,2)
+
+		//a := Compsite{name:"aaa",code:1}
+		a := Compsite{"aaa",1}
+		b := Compsite{"bbb",2}
+		runtime.Log("===teststructarray1")
+		array[0] = a
+		array[1] = b
+		runtime.Log("===teststructarray2")
+		c := array[0].name
+		runtime.Notify(c)
+		runtime.Notify(array[1].code)
+		return true
+
+	}
+
+
 
 	runtime.Notify("not supported method!")
 

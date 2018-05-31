@@ -349,7 +349,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 						c.emitLoadLocal(expr.Name)            // load the struct
 						i := indexOfStruct(strct, t.Sel.Name) // get the index of the field
 						c.emitStoreStructField(i)             // store the field
-					}
+				}
 				default:
 					log.Fatal("nested selector assigns not supported yet")
 				}
@@ -626,6 +626,47 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				i := indexOfStruct(strct, n.Sel.Name)
 				c.emitLoadField(i) // load the field
 			}
+
+		case *ast.IndexExpr://array[struct]
+		//todo test
+
+			collectionName := n.X.(*ast.IndexExpr).X.(*ast.Ident).Name   //get collection name
+			idx := n.X.(*ast.IndexExpr).Index
+			switch idx.(type){
+			case *ast.BasicLit:
+				idxvalue := idx.(*ast.BasicLit).Value
+				c.emitLoadLocal(collectionName)
+				switch idx.(*ast.BasicLit).Kind{
+				case token.INT: //index is int
+				    intvalue ,err :=  strconv.Atoi(idxvalue)
+				    if err != nil{
+				    	log.Fatal(err.Error())
+					}
+					emitInt(c.prog,int64(intvalue))
+				case token.STRING: //index is string (map)
+					emitString(c.prog,idxvalue)
+
+				default :
+					log.Fatal("not supported index type!")
+				}
+				emitOpcode(c.prog,vm.Opickitem) //get the collection in collection
+				fieldname := n.Sel.Name
+				typ := c.typeInfo.ObjectOf(n.X.(*ast.IndexExpr).X.(*ast.Ident)).Type().Underlying()
+
+				baseElemtyp := typ.(*types.Slice).Elem().Underlying()
+
+				if strct, ok := baseElemtyp.(*types.Struct); ok {
+					i := indexOfStruct(strct, fieldname)
+					emitInt(c.prog,int64(i))
+				}else{
+					log.Fatal("not a struct type")
+				}
+				emitOpcode(c.prog,vm.Opickitem)
+			default:
+				log.Fatal("nested selectors IndexExpr not supported yet")
+			}
+
+
 		default:
 			log.Fatal("nested selectors not supported yet")
 		}
@@ -790,9 +831,9 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	}
 	emitOpcode(c.prog, vm.Onop)
 	emitInt(c.prog, int64(strct.NumFields()))
-	//emitOpcode(c.prog, vm.Onewstruct)
+	emitOpcode(c.prog, vm.Onewstruct)
 	//FIXME for now ,vm doesn't support struct pick/set item,so change it to array type
-	emitOpcode(c.prog, vm.Onewarray)
+	//emitOpcode(c.prog, vm.Onewarray)
 	emitOpcode(c.prog, vm.Otoaltstack)
 
 	// We need to locally store all the fields, even if they are not initialized.
@@ -800,15 +841,12 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	for i := 0; i < strct.NumFields(); i++ {
 		sField := strct.Field(i)
 		fieldAdded := false
-
 		// Fields initialized by the program.
-		for _, field := range lit.Elts {
-
+		for i, field := range lit.Elts {
 			switch field.(type) {
-			case *ast.KeyValueExpr:
+			case *ast.KeyValueExpr:      //for struct{fieldname:value} case
 				f := field.(*ast.KeyValueExpr)
 				fieldName := f.Key.(*ast.Ident).Name
-
 				if sField.Name() == fieldName {
 					ast.Walk(c, f.Value)
 					pos := indexOfStruct(strct, fieldName)
@@ -818,7 +856,12 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 				}
 			case *ast.Ident:
 				//todo resolve the Ident case
-				log.Fatal("can't solvee the field %v\n", field)
+				log.Fatalf("can't solve the field %v\n", field)
+			case *ast.BasicLit:   //for struct{value1,value2} case
+				ast.Walk(c,field)
+				c.emitStoreLocal(i)
+			default:
+				log.Fatal("not supported struct field type")
 			}
 		}
 		if fieldAdded {
