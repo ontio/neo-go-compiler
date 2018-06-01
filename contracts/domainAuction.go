@@ -192,6 +192,28 @@ func Main(operation string, args []interface{}) bool {
 		return true
 	}
 
+	if operation == "teststruct" {
+		type Information struct{
+			info string
+			id string
+		}
+
+		type Student struct{
+			name string
+			age int
+			info Information
+		}
+
+		a:= Information{"testtest","afad"}
+		b:= Student{"jack",10,a}
+
+		runtime.Notify(a.info)
+		runtime.Notify(b.info.id)
+
+		return true
+	}
+
+
 	if operation == "teststructarray"{
 		type Compsite struct{
 			name string

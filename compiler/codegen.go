@@ -661,6 +661,23 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			default:
 				log.Fatal("nested selectors IndexExpr not supported yet")
 			}
+		case *ast.SelectorExpr:
+			ast.Walk(c,n.X.(*ast.SelectorExpr).X)
+			typ := c.typeInfo.ObjectOf(n.X.(*ast.SelectorExpr).X.(*ast.Ident)).Type().Underlying()
+			fieldname:= n.X.(*ast.SelectorExpr).Sel.Name
+
+			if strct, ok := typ.(*types.Struct); ok {
+				i := indexOfStruct(strct, fieldname)
+				emitInt(c.prog,int64(i))
+			}else{
+				log.Fatal("not a struct type")
+			}
+			emitOpcode(c.prog,vm.Opickitem)
+
+			//todo replace with the real index of struct
+			emitInt(c.prog,int64(1))
+
+			emitOpcode(c.prog,vm.Opickitem)
 
 
 		default:
@@ -852,8 +869,19 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 					break
 				}
 			case *ast.Ident:
-				//todo resolve the Ident case
-				log.Fatalf("can't solve the field %v\n", field)
+				varname := field.(*ast.Ident).Name
+				fieldIdx :=  indexOfStruct(strct, sField.Name())
+				if fieldIdx == i{
+					emitOpcode(c.prog, vm.Ofromaltstack)
+					c.emitLoadLocal(varname)
+					emitInt(c.prog,int64(1))
+					emitOpcode(c.prog,vm.Oroll)
+					emitOpcode(c.prog, vm.Otoaltstack)
+					c.emitStoreLocal(i)
+
+					fieldAdded = true
+				}
+
 			case *ast.BasicLit:   //for struct{value1,value2} case
 				fieldIdx :=  indexOfStruct(strct, sField.Name())
 				if fieldIdx == i{
