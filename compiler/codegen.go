@@ -469,8 +469,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			for i := ln - 1; i >= 0; i-- {
 				c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
 			}
-			//todo support the []struct
-
 			emitInt(c.prog, int64(ln))
 			emitOpcode(c.prog, vm.Opack)
 			return nil
@@ -628,8 +626,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			}
 
 		case *ast.IndexExpr://array[struct]
-		//todo test
-
 			collectionName := n.X.(*ast.IndexExpr).X.(*ast.Ident).Name   //get collection name
 			idx := n.X.(*ast.IndexExpr).Index
 			switch idx.(type){
@@ -840,6 +836,7 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	// We will initialize all fields to their "zero" value.
 	for i := 0; i < strct.NumFields(); i++ {
 		sField := strct.Field(i)
+
 		fieldAdded := false
 		// Fields initialized by the program.
 		for i, field := range lit.Elts {
@@ -858,8 +855,13 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 				//todo resolve the Ident case
 				log.Fatalf("can't solve the field %v\n", field)
 			case *ast.BasicLit:   //for struct{value1,value2} case
-				ast.Walk(c,field)
-				c.emitStoreLocal(i)
+				fieldIdx :=  indexOfStruct(strct, sField.Name())
+				if fieldIdx == i{
+					ast.Walk(c,field)
+					c.emitStoreLocal(i)
+					fieldAdded = true
+				}
+
 			default:
 				log.Fatal("not supported struct field type")
 			}

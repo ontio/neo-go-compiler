@@ -209,7 +209,7 @@ func Main(operation string, args []interface{}) bool {
 		runtime.Log("===teststructarray2")
 		c := array[0].name
 		runtime.Notify(c)
-		runtime.Notify(array[0].code)
+		runtime.Notify(array[1].code)
 		return true
 
 	}
