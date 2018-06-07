@@ -24,4 +24,7 @@ var Syscalls = map[string]string{
 	"GetTime":         "Neo.Runtime.GetTime",
 	"Notify":          "Neo.Runtime.Notify",
 	"Log":             "Neo.Runtime.Log",
+
+	//Native API
+	"Invoke":			"Ontology.Native.Invoke",
 }

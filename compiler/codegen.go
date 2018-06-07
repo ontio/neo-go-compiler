@@ -59,8 +59,11 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 		switch typ.Kind() {
 		//todo test type.Int64
 		case types.Int, types.UntypedInt, types.Int64:
-			val, _ := constant.Int64Val(t.Value)
-			emitInt(c.prog, val)
+			if t.Value != nil{
+				val, _ := constant.Int64Val(t.Value)
+				emitInt(c.prog, val)
+			}
+
 		case types.String, types.UntypedString:
 			val := constant.StringVal(t.Value)
 			emitString(c.prog, val)
@@ -76,12 +79,11 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 		}
 	case *types.Struct:
 		//it's struct array sovled outside
-		log.Fatalf("compiler don't know how to convert this constant: %v", t)
+		log.Fatalf("compiler don't know how to convert Struct this constant: %v", t)
 	case *types.Array:
-		log.Fatalf("compiler don't know how to convert this constant: %v", t)
+		log.Fatalf("compiler don't know how to convert Array this constant: %v", t)
 	case *types.Slice:
-		log.Fatalf("compiler don't know how to convert this constant: %v", t)
-
+		log.Fatalf("compiler don't know how to convert Slice this constant: %v", t)
 	default:
 		log.Fatalf("compiler don't know how to convert this constant: %v", t)
 	}
@@ -467,7 +469,17 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				return nil
 			}
 			for i := ln - 1; i >= 0; i-- {
-				c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
+				switch n.Elts[i].(type){
+				case *ast.BasicLit:
+					c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
+				case *ast.Ident:
+					if isIdentBool(n.Elts[i].(*ast.Ident)) {
+						c.emitLoadConst(makeBoolFromIdent(n.Elts[i].(*ast.Ident), c.typeInfo))
+					} else {
+						c.emitLoadLocal((n.Elts[i].(*ast.Ident).Name))
+					}
+				}
+
 			}
 			emitInt(c.prog, int64(ln))
 			emitOpcode(c.prog, vm.Opack)
