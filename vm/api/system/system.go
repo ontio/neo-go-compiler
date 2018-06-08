@@ -8,8 +8,13 @@ func GetCallingScriptHash() []byte { return nil }
 
 func GetEntryScriptHash() []byte { return nil }
 
-func SerializeContract(version int, code []byte, contractAddress string, method string, args []byte) []byte {
-	return nil
-}
+//func SerializeContract(version int, code []byte, contractAddress string, method string, args []byte) []byte {
+//	return nil
+//}
+//
+//func SerializeTransfer(from []byte, to []byte, amount int64) []byte { return nil }
 
-func SerializeTransfer(from []byte, to []byte, amount int64) []byte { return nil }
+func GetContract(hash interface{}) interface{}  { return nil }
+func GetTransactionHeight(hash interface{}) int { return 0 }
+
+func GetStorage() interface{} { return nil }

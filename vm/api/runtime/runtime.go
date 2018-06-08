@@ -15,11 +15,6 @@ func GetTime() int {
 	return 0
 }
 
-// Notify an event to the VM.
-/*func Notify(arg interface{}) int {
-	return 0
-}*/
-
 func Notify(arg interface{}) {}
 
 // Log intructs the VM to log the given message.
@@ -40,3 +35,11 @@ func Verification() byte {
 func GetTrigger() interface{} {
 	return 0
 }
+
+func RuntimeGetTime() interface{}                    { return nil }
+func RuntimeCheckWitness() bool                      { return false }
+func RuntimeNotify(msg interface{})                  {}
+func RuntimeLog(msg interface{})                     {}
+func RuntimeGetTrigger() interface{}                 { return nil }
+func RuntimeSerialize(obj interface{}) interface{}   { return nil }
+func RuntimeDeserialize(obj interface{}) interface{} { return nil }

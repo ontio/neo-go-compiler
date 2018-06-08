@@ -14,3 +14,10 @@ func Get(ctx interface{}, key interface{}) interface{} { return 0 }
 
 // Delete removes a stored key value pair.
 func Delete(ctx interface{}, key interface{}) {}
+
+func GetStorage(ctx interface{}, key interface{}) interface{}        { return nil }
+func PutStorage(ctx interface{}, key interface{}, value interface{}) {}
+func DeleteSorage(ctx interface{}, key interface{})                  {}
+func GetStorageContext() interface{}                                 { return nil }
+func GetReadOnlyStorageContext() interface{}                         { return nil }
+func StorageCtxAsReadOnly(ctx interface{}) interface{}               { return nil }

@@ -59,7 +59,7 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 		switch typ.Kind() {
 		//todo test type.Int64
 		case types.Int, types.UntypedInt, types.Int64:
-			if t.Value != nil{
+			if t.Value != nil {
 				val, _ := constant.Int64Val(t.Value)
 				emitInt(c.prog, val)
 			}
@@ -351,7 +351,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 						c.emitLoadLocal(expr.Name)            // load the struct
 						i := indexOfStruct(strct, t.Sel.Name) // get the index of the field
 						c.emitStoreStructField(i)             // store the field
-				}
+					}
 				default:
 					log.Fatal("nested selector assigns not supported yet")
 				}
@@ -469,7 +469,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				return nil
 			}
 			for i := ln - 1; i >= 0; i-- {
-				switch n.Elts[i].(type){
+				switch n.Elts[i].(type) {
 				case *ast.BasicLit:
 					c.emitLoadConst(c.typeInfo.Types[n.Elts[i]])
 				case *ast.Ident:
@@ -637,27 +637,27 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				c.emitLoadField(i) // load the field
 			}
 
-		case *ast.IndexExpr://array[struct]
-			collectionName := n.X.(*ast.IndexExpr).X.(*ast.Ident).Name   //get collection name
+		case *ast.IndexExpr: //array[struct]
+			collectionName := n.X.(*ast.IndexExpr).X.(*ast.Ident).Name //get collection name
 			idx := n.X.(*ast.IndexExpr).Index
-			switch idx.(type){
+			switch idx.(type) {
 			case *ast.BasicLit:
 				idxvalue := idx.(*ast.BasicLit).Value
 				c.emitLoadLocal(collectionName)
-				switch idx.(*ast.BasicLit).Kind{
+				switch idx.(*ast.BasicLit).Kind {
 				case token.INT: //index is int
-				    intvalue ,err :=  strconv.Atoi(idxvalue)
-				    if err != nil{
-				    	log.Fatal(err.Error())
+					intvalue, err := strconv.Atoi(idxvalue)
+					if err != nil {
+						log.Fatal(err.Error())
 					}
-					emitInt(c.prog,int64(intvalue))
+					emitInt(c.prog, int64(intvalue))
 				case token.STRING: //index is string (map)
-					emitString(c.prog,idxvalue)
+					emitString(c.prog, idxvalue)
 
-				default :
+				default:
 					log.Fatal("not supported index type!")
 				}
-				emitOpcode(c.prog,vm.Opickitem) //get the collection in collection
+				emitOpcode(c.prog, vm.Opickitem) //get the collection in collection
 				fieldname := n.Sel.Name
 				typ := c.typeInfo.ObjectOf(n.X.(*ast.IndexExpr).X.(*ast.Ident)).Type().Underlying()
 
@@ -665,32 +665,31 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 
 				if strct, ok := baseElemtyp.(*types.Struct); ok {
 					i := indexOfStruct(strct, fieldname)
-					emitInt(c.prog,int64(i))
-				}else{
+					emitInt(c.prog, int64(i))
+				} else {
 					log.Fatal("not a struct type")
 				}
-				emitOpcode(c.prog,vm.Opickitem)
+				emitOpcode(c.prog, vm.Opickitem)
 			default:
 				log.Fatal("nested selectors IndexExpr not supported yet")
 			}
 		case *ast.SelectorExpr:
-			ast.Walk(c,n.X.(*ast.SelectorExpr).X)
+			ast.Walk(c, n.X.(*ast.SelectorExpr).X)
 			typ := c.typeInfo.ObjectOf(n.X.(*ast.SelectorExpr).X.(*ast.Ident)).Type().Underlying()
-			fieldname:= n.X.(*ast.SelectorExpr).Sel.Name
+			fieldname := n.X.(*ast.SelectorExpr).Sel.Name
 
 			if strct, ok := typ.(*types.Struct); ok {
 				i := indexOfStruct(strct, fieldname)
-				emitInt(c.prog,int64(i))
-			}else{
+				emitInt(c.prog, int64(i))
+			} else {
 				log.Fatal("not a struct type")
 			}
-			emitOpcode(c.prog,vm.Opickitem)
+			emitOpcode(c.prog, vm.Opickitem)
 
 			//todo replace with the real index of struct
-			emitInt(c.prog,int64(1))
+			emitInt(c.prog, int64(1))
 
-			emitOpcode(c.prog,vm.Opickitem)
-
+			emitOpcode(c.prog, vm.Opickitem)
 
 		default:
 			log.Fatal("nested selectors not supported yet")
@@ -870,7 +869,7 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 		// Fields initialized by the program.
 		for i, field := range lit.Elts {
 			switch field.(type) {
-			case *ast.KeyValueExpr:      //for struct{fieldname:value} case
+			case *ast.KeyValueExpr: //for struct{fieldname:value} case
 				f := field.(*ast.KeyValueExpr)
 				fieldName := f.Key.(*ast.Ident).Name
 				if sField.Name() == fieldName {
@@ -882,22 +881,22 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 				}
 			case *ast.Ident:
 				varname := field.(*ast.Ident).Name
-				fieldIdx :=  indexOfStruct(strct, sField.Name())
-				if fieldIdx == i{
+				fieldIdx := indexOfStruct(strct, sField.Name())
+				if fieldIdx == i {
 					emitOpcode(c.prog, vm.Ofromaltstack)
 					c.emitLoadLocal(varname)
-					emitInt(c.prog,int64(1))
-					emitOpcode(c.prog,vm.Oroll)
+					emitInt(c.prog, int64(1))
+					emitOpcode(c.prog, vm.Oroll)
 					emitOpcode(c.prog, vm.Otoaltstack)
 					c.emitStoreLocal(i)
 
 					fieldAdded = true
 				}
 
-			case *ast.BasicLit:   //for struct{value1,value2} case
-				fieldIdx :=  indexOfStruct(strct, sField.Name())
-				if fieldIdx == i{
-					ast.Walk(c,field)
+			case *ast.BasicLit: //for struct{value1,value2} case
+				fieldIdx := indexOfStruct(strct, sField.Name())
+				if fieldIdx == i {
+					ast.Walk(c, field)
 					c.emitStoreLocal(i)
 					fieldAdded = true
 				}
