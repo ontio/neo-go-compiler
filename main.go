@@ -8,8 +8,8 @@ import (
 
 func main() {
 	ctl := cli.NewApp()
-	ctl.Name = "neo-go"
-	ctl.Usage = "Official Go client for Neo"
+	ctl.Name = "neo-go-compiler"
+	ctl.Usage = "golang compiler for neo smart contract"
 
 	ctl.Commands = []cli.Command{
 		smartcontract.NewCommand(),

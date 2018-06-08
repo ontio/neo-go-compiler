@@ -964,7 +964,7 @@ func (c *codegen) newFunc(decl *ast.FuncDecl) *funcScope {
 }
 
 // CodeGen is the function that compiles the program to bytecode.
-func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
+func CodeGen(info *buildInfo, genabi bool) (*bytes.Buffer, *bytes.Buffer, error) {
 	pkg := info.program.Package(info.initialPackage)
 	c := &codegen{
 		buildInfo: info,
@@ -973,17 +973,20 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
 		funcs:     map[string]*funcScope{},
 		typeInfo:  &pkg.Info,
 	}
-
+	var abibytes []byte
 	// Resolve the entrypoint of the program
 	main, mainFile := resolveEntryPoint(mainIdent, pkg)
 	if main == nil {
 		log.Fatal("could not find func main. did you forgot to declare it?")
 	}
 
-	funcs := MakeAbi(main)
-	abibytes, err := json.Marshal(funcs)
-	if err != nil {
-		return nil, nil, err
+	if genabi {
+		funcs := MakeAbi(main)
+		tmpbytes, err := json.Marshal(funcs)
+		if err != nil {
+			return nil, nil, err
+		}
+		abibytes = tmpbytes
 	}
 
 	funUsage := analyzeFuncUsage(info.program.AllPackages)
@@ -1018,7 +1021,12 @@ func CodeGen(info *buildInfo) (*bytes.Buffer, *bytes.Buffer, error) {
 
 	c.writeJumps()
 
-	return c.prog, bytes.NewBuffer(abibytes), nil
+	if genabi {
+		return c.prog, bytes.NewBuffer(abibytes), nil
+	} else {
+		return c.prog, nil, nil
+	}
+
 }
 
 func (c *codegen) resolveFuncDecls(f *ast.File) {

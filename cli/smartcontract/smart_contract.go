@@ -13,7 +13,7 @@ const (
 func NewCommand() cli.Command {
 	return cli.Command{
 		Name:  "contract",
-		Usage: "compile - debug - deploy smart contracts",
+		Usage: "compile smart contracts",
 		Subcommands: []cli.Command{
 			{
 				Name:   "compile",
@@ -32,19 +32,12 @@ func NewCommand() cli.Command {
 						Name:  "debug, d",
 						Usage: "Debug mode will print out additional information after a compiling",
 					},
+					cli.BoolFlag{
+						Name:  "abi, a",
+						Usage: "generate abi file",
+					},
 				},
 			},
-			//{
-			//	Name:   "testinvoke",
-			//	Usage:  "Test an invocation of a smart contract on the blockchain",
-			//	Action: testInvoke,
-			//	Flags: []cli.Flag{
-			//		cli.StringFlag{
-			//			Name:  "in, i",
-			//			Usage: "Input location of the avm file that needs to be invoked",
-			//		},
-			//	},
-			//},
 			{
 				Name:   "opdump",
 				Usage:  "dump the opcode of a .go file",
@@ -69,6 +62,7 @@ func contractCompile(ctx *cli.Context) error {
 	o := &compiler.Options{
 		Outfile: ctx.String("out"),
 		Debug:   ctx.Bool("debug"),
+		AbiGen:  ctx.Bool("abi"),
 	}
 
 	if err := compiler.CompileAndSave(src, o); err != nil {
