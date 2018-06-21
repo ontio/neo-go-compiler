@@ -507,6 +507,33 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(c, n.Y)
 			return nil
 
+		case token.EQL:
+			//todo test this branch
+			ast.Walk(c, n.X)
+			ast.Walk(c, n.Y)
+
+			//x == "value" case
+			if bl,err := n.Y.(*ast.BasicLit);err == true{
+				switch bl.Kind{
+				case token.INT, token.FLOAT:
+					emitOpcode(c.prog, vm.Onumequal)
+				default:
+					emitOpcode(c.prog, vm.Oequal)
+				}
+			}else{
+				// "value" == x
+				if bl,err := n.X.(*ast.BasicLit);err == true {
+					switch bl.Kind {
+					case token.INT, token.FLOAT:
+						emitOpcode(c.prog, vm.Onumequal)
+					default:
+						emitOpcode(c.prog, vm.Oequal)
+					}
+				}else{  //x == y case
+						emitOpcode(c.prog, vm.Oequal)
+					}
+			}
+
 		default:
 			// The AST package will try to resolve all basic literals for us.
 			// If the typeinfo.Value is not nil we know that the expr is resolved
@@ -519,7 +546,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				c.emitLoadConst(tinfo)
 				return nil
 			}
-
 			ast.Walk(c, n.X)
 			ast.Walk(c, n.Y)
 			c.convertToken(n.Op)
@@ -943,6 +969,8 @@ func (c *codegen) convertToken(tok token.Token) {
 	case token.GEQ:
 		emitOpcode(c.prog, vm.Ogte)
 	case token.EQL:
+		//todo string or other object equality???
+		//only integer or int64 to emit onumequal
 		emitOpcode(c.prog, vm.Onumequal)
 	case token.NEQ:
 		emitOpcode(c.prog, vm.Onumnotequal)

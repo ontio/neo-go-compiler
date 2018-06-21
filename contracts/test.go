@@ -13,6 +13,10 @@ func Main(operation string, args []interface{}) bool {
 		if len(args) != 2 {
 			return false
 		}
+		f:= false
+		if f ==true{
+			return false
+		}
 		runtime.Notify(args)
 
 		a := args[0].(int)

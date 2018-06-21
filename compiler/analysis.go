@@ -230,7 +230,8 @@ func isSyscall(name string) bool {
 }
 
 func isAppcall(name string) bool {
-	return name == "AppCall"
+	return false
+	//return name == "AppCall"
 }
 
 // isNoRetSyscall checks if the syscall has a return value.
