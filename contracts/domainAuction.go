@@ -1,7 +1,6 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/appcall"
 	"neo-go-compiler/vm/api/runtime"
 	"neo-go-compiler/vm/api/storage"
 	"neo-go-compiler/vm/api/system"
@@ -35,7 +34,7 @@ func bytesEquals(a []byte, b []byte) bool {
 
 }
 
-func transONT(from []byte, to []byte, amount int64) bool {
+/*func transONT(from []byte, to []byte, amount int64) bool {
 
 	transferbytes := system.SerializeTransfer(from, to, amount)
 	runtime.Log("====transONT 3")
@@ -49,7 +48,7 @@ func transONT(from []byte, to []byte, amount int64) bool {
 
 	return true
 }
-
+*/
 func Main(operation string, args []interface{}) bool {
 
 	var (
@@ -136,7 +135,7 @@ func Main(operation string, args []interface{}) bool {
 		return true
 	}
 
-	if operation == "transfer" {
+/*	if operation == "transfer" {
 		if len(args) != 3 {
 			runtime.Notify("args count error!")
 		}
@@ -147,22 +146,22 @@ func Main(operation string, args []interface{}) bool {
 		runtime.Notify("transfer done")
 		return res
 
-	}
+	}*/
 
 	if operation == "testmap" {
 		if len(args) != 2{
-			runtime.Notify("args count error!")
+			//runtime.Notify("args count error!")
 		}
 		key := args[0].(string)
 		value := args[1].(string)
-		runtime.Log("===testmap0")
+		//runtime.Log("===testmap0")
 
 		m := make(map[string]string)
-		runtime.Log("===testmap1")
+		//runtime.Log("===testmap1")
 		m[key] = value
-		runtime.Log("===testmap2")
+		//runtime.Log("===testmap2")
 		val2 := m[key]
-		runtime.Log("===testmap3")
+		//runtime.Log("===testmap3")
 		runtime.Notify(val2)
 
 		newkey:="testkey"
@@ -171,8 +170,8 @@ func Main(operation string, args []interface{}) bool {
 		runtime.Notify(val3)
 
 		for k,v :=range m {
-			runtime.Notify(k)
-			runtime.Notify(v)
+			runtime.RuntimeNotify(k)
+			runtime.RuntimeNotify(v)
 		}
 		return true
 	}
