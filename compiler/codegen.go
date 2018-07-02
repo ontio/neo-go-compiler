@@ -507,33 +507,33 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(c, n.Y)
 			return nil
 
-		case token.EQL:
-			//todo test this branch
-			ast.Walk(c, n.X)
-			ast.Walk(c, n.Y)
+		/*case token.EQL:
+		//todo test this branch
+		ast.Walk(c, n.X)
+		ast.Walk(c, n.Y)
 
-			//x == "value" case
-			if bl,err := n.Y.(*ast.BasicLit);err == true{
-				switch bl.Kind{
+		//x == "value" case
+		if bl,err := n.Y.(*ast.BasicLit);err == true{
+			switch bl.Kind{
+			case token.INT, token.FLOAT:
+				emitOpcode(c.prog, vm.Onumequal)
+			default:
+				emitOpcode(c.prog, vm.Oequal)
+			}
+		}else{
+			// "value" == x
+			if bl,err := n.X.(*ast.BasicLit);err == true {
+				switch bl.Kind {
 				case token.INT, token.FLOAT:
 					emitOpcode(c.prog, vm.Onumequal)
 				default:
 					emitOpcode(c.prog, vm.Oequal)
 				}
-			}else{
-				// "value" == x
-				if bl,err := n.X.(*ast.BasicLit);err == true {
-					switch bl.Kind {
-					case token.INT, token.FLOAT:
-						emitOpcode(c.prog, vm.Onumequal)
-					default:
-						emitOpcode(c.prog, vm.Oequal)
-					}
-				}else{  //x == y case
-						emitOpcode(c.prog, vm.Oequal)
-					}
-			}
-
+			}else{  //x == y case
+					emitOpcode(c.prog, vm.Oequal)
+				}
+		}
+		*/
 		default:
 			// The AST package will try to resolve all basic literals for us.
 			// If the typeinfo.Value is not nil we know that the expr is resolved

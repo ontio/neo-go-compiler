@@ -37,7 +37,7 @@ func GetTrigger() interface{} {
 }
 
 func RuntimeGetTime() interface{}                    { return nil }
-func RuntimeCheckWitness() bool                      { return false }
+func RuntimeCheckWitness(hash []byte) bool           { return false }
 func RuntimeNotify(msg interface{})                  {}
 func RuntimeLog(msg interface{})                     {}
 func RuntimeGetTrigger() interface{}                 { return nil }
