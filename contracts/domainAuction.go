@@ -17,19 +17,26 @@ func NewDomain(url string, price int64, owner []byte) Domain {
 }
 
 func bytesEquals(a []byte, b []byte) bool {
-
+	runtime.RuntimeLog("==bytesEquals===")
 	if a == nil && b == nil {
 		return true
 	}
+	runtime.RuntimeLog("==bytesEquals 1===")
+
 	if len(a) != len(b) {
 		return false
 	}
+	runtime.RuntimeLog("==bytesEquals 2===")
 
 	for i := 0; i < len(a); i++ {
+		runtime.RuntimeLog("===i")
 		if a[i] != b[i] {
+			runtime.RuntimeLog("return false")
 			return false
 		}
 	}
+	runtime.RuntimeLog("==bytesEquals 3===")
+
 	return true
 
 }
@@ -99,17 +106,28 @@ func Main(operation string, args []interface{}) bool {
 		url := args[0].(string)
 		addr := args[1].([]byte)
 		price := args[2].(int64)
+		runtime.RuntimeLog("00")
+
 		if runtime.RuntimeCheckWitness(addr) == false {
 			runtime.RuntimeNotify("Not a valide address!")
 			return false
 		}
+		runtime.RuntimeLog("111111")
 		owner := storage.GetStorage(ctx, url)
+		runtime.RuntimeNotify(owner)
+
+		runtime.RuntimeLog("11222")
 		isOwner := bytesEquals(owner.([]byte), addr)
+		runtime.RuntimeLog("2222")
 
 		if isOwner == false {
+			runtime.RuntimeLog("3333")
+
 			runtime.RuntimeNotify("Not owner! ")
 			return false
 		} else {
+			runtime.RuntimeLog("4444")
+
 			storage.PutStorage(ctx, url, selfAddr)
 			storage.PutStorage(ctx, "Original_Owner_"+url, addr)
 			storage.PutStorage(ctx, "Price_"+url, price)

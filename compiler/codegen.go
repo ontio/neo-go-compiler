@@ -632,21 +632,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		// If we are not assigning this function to a variable we need to drop
 		// (cleanup) the top stack item. It's not a void but you get the point \o/.
 
-		//flag := false
 		if _, ok := c.scope.voidCalls[n]; ok {
-			// Fix bug: if the Call is a void function, it doesn't need a "drop" opcode
-			// loop the func body to find whether it has a "return" statement
-			/*			for _,l := range f.decl.Body.List{
-							switch l.(type){
-							case  *ast.ReturnStmt:
-								flag = true
-							}
-						}
-
-						if flag == true{
-							emitOpcode(c.prog, vm.Odrop)
-						}*/
-
 			if f.decl.Type.Results != nil {
 				emitOpcode(c.prog, vm.Odrop)
 			}
@@ -763,10 +749,8 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			}
 
 		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
-			//pos := c.scope.loadLocal(n.X.(*ast.Ident).Name)
 			pos := c.scope.loadLocal(n.Index.(*ast.Ident).Name)
 			c.emitLoadLocalPos(pos)
-			emitOpcode(c.prog, vm.Opickitem)
 		default:
 			ast.Walk(c, n.Index)
 			emitOpcode(c.prog, vm.Opickitem) // just pickitem here
