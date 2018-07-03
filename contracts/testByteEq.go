@@ -22,6 +22,9 @@ func Main(operation string ,args []interface{}) bool{
 
 
 func bytesEquals(a []byte, b []byte) bool {
+	runtime.RuntimeNotify(a)
+	runtime.RuntimeNotify(b)
+
 	if a == nil && b == nil {
 		return true
 	}
@@ -33,6 +36,9 @@ func bytesEquals(a []byte, b []byte) bool {
 	for i := 0; i < len(a); i++ {
 		runtime.RuntimeLog("===i")
 		if a[i] != b[i] {
+			runtime.RuntimeNotify(a[i])
+			runtime.RuntimeNotify(b[i])
+
 			return false
 		}
 	}

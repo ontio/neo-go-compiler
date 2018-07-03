@@ -750,7 +750,9 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 
 		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
 			pos := c.scope.loadLocal(n.Index.(*ast.Ident).Name)
-			c.emitLoadLocalPos(pos)
+			c.emitLoadLocalPos(pos)// get i
+			emitOpcode(c.prog, vm.Opickitem)
+
 		default:
 			ast.Walk(c, n.Index)
 			emitOpcode(c.prog, vm.Opickitem) // just pickitem here
