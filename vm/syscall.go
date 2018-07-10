@@ -8,8 +8,6 @@ var Syscalls = map[string]string{
 	"GetExecutingScriptHash": "System.ExecutionEngine.GetExecutingScriptHash",
 	"GetCallingScriptHash":   "System.ExecutionEngine.GetCallingScriptHash",
 	"GetEntryScriptHash":     "System.ExecutionEngine.GetEntryScriptHash",
-	//"SerializeContract":      "System.ExecutionEngine.SerializeContract", //temp for test
-	//"SerializeTransfer":      "System.ExecutionEngine.SerializeTransfer", //temp for test
 	"GetBlockTransactionCount":  "System.Block.GetTransactionCount",
 	"GetBlockTransactions":      "System.Block.GetTransactions",
 	"GetBlockTransaction":       "System.Block.GetTransaction",
@@ -39,13 +37,13 @@ var Syscalls = map[string]string{
 	"RuntimeSerialize":          "System.Runtime.Serialize",
 	"RuntimeDeserialize":        "System.Runtime.Deserialize",
 
-	// Storage API
+	// Storage API for neo
 	"GetContext": "Neo.Storage.GetContext",
 	"Put":        "Neo.Storage.Put",
 	"Get":        "Neo.Storage.Get",
 	"Delete":     "Neo.Storage.Delete",
 
-	// Runtime API
+	// Runtime API for neo
 	"GetTrigger":      "Neo.Runtime.GetTrigger",
 	"CheckWitness":    "Neo.Runtime.CheckWitness",
 	"GetCurrentBlock": "Neo.Runtime.GetCurrentBlock",

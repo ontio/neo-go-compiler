@@ -14,7 +14,7 @@ var (
 	// Go language builtin functions and custom builtin utility functions.
 	builtinFuncs = []string{
 		"len", "append", "SHA256",
-		"SHA1", "Hash256", "Hash160", "make",
+		"SHA1", "Hash256", "Hash160", "make","[]byte",
 	}
 
 	// VM system calls that have no return value.

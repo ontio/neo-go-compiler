@@ -542,12 +542,23 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			// example:
 			// const x = 10
 			// x + 2 will results into 12
-			if tinfo := c.typeInfo.Types[n]; tinfo.Value != nil {
+			tinfo := c.typeInfo.Types[n]
+			if tinfo.Value != nil{
 				c.emitLoadConst(tinfo)
-				return nil
+					return nil
 			}
+
 			ast.Walk(c, n.X)
 			ast.Walk(c, n.Y)
+			//"+" for string concat
+			if tinfo.Type.Underlying().String() == "string"{
+				switch n.Op{
+				case token.ADD:
+					emitOpcode(c.prog, vm.Ocat)
+				}
+				return nil
+			}
+
 			c.convertToken(n.Op)
 			return nil
 		}
@@ -845,6 +856,19 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		emitOpcode(c.prog, vm.Ohash256)
 	case "Hash160":
 		emitOpcode(c.prog, vm.Ohash160)
+	case "[]byte":
+		switch  expr.Args[0].(type){
+		case *ast.BasicLit:
+			val := expr.Args[0].(*ast.BasicLit).Value
+			bs := []byte(val)
+			emitBytes(c.prog,bs)
+		//case *ast.Ident:
+		//	agName :=  expr.Args[0].(*ast.Ident).Name
+		//	c.emitLoadLocal(agName)
+		default:
+			log.Fatal("toBytes method only support const string")
+
+		}
 	}
 }
 
