@@ -10,7 +10,7 @@ Use built binary file "neo-go-compile"
 use ```--help``` to get detail information
 
 ## Neo and Ontology
-Smart contract on Neo and Ontology has some different on their APIs
+Smart contract for Neo and Ontology has some difference on their APIs
 
 | No   | Ontology            | Neo             |      |
 | ---- | ------------------- | --------------- | ---- |

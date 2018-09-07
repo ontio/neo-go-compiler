@@ -856,6 +856,8 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		emitOpcode(c.prog, vm.Ohash256)
 	case "Hash160":
 		emitOpcode(c.prog, vm.Ohash160)
+	case "BytesEquals":
+		emitOpcode(c.prog, vm.Oequal)
 	case "[]byte":
 		switch  expr.Args[0].(type){
 		case *ast.BasicLit:
@@ -867,7 +869,6 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		//	c.emitLoadLocal(agName)
 		default:
 			log.Fatal("toBytes method only support const string")
-
 		}
 	}
 }
@@ -892,8 +893,6 @@ func (c *codegen) convertStruct(lit *ast.CompositeLit) {
 	emitOpcode(c.prog, vm.Onop)
 	emitInt(c.prog, int64(strct.NumFields()))
 	emitOpcode(c.prog, vm.Onewstruct)
-	//FIXME for now ,vm doesn't support struct pick/set item,so change it to array type
-	//emitOpcode(c.prog, vm.Onewarray)
 	emitOpcode(c.prog, vm.Otoaltstack)
 
 	// We need to locally store all the fields, even if they are not initialized.
