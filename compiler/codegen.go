@@ -13,6 +13,9 @@ import (
 	"math/rand"
 	"neo-go-compiler/vm"
 	"strconv"
+	"github.com/ontio/ontology/common"
+	"strings"
+	"fmt"
 )
 
 const mainIdent = "Main"
@@ -570,7 +573,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			numArgs   = len(n.Args)
 			isBuiltin = isBuiltin(n.Fun)
 		)
-
 		switch fun := n.Fun.(type) {
 		case *ast.Ident:
 			f, ok = c.funcs[fun.Name]
@@ -602,6 +604,8 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			case *ast.SelectorExpr:
 				log.Fatalf("could not resolve type %v", n.Args[0])
 			}
+		default:
+			fmt.Println("not recongized...")
 
 		}
 
@@ -618,6 +622,9 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitInt(c.prog, 2)
 				emitOpcode(c.prog, vm.Oxswap)
 			}
+			if numArgs > 3 && !isSyscall(f.name)  {
+				log.Fatal("only support less than 3 args!")
+			}
 			//todo how to solve more than 3 args??
 		}
 
@@ -627,6 +634,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		emitOpcode(c.prog, vm.Onop)
 
 		// Check builtin first to avoid nil pointer on funcScope!
+
 		if isBuiltin {
 			// Use the ident to check, builtins are not in func scopes.
 			// We can be sure builtins are of type *ast.Ident.
@@ -858,6 +866,20 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		emitOpcode(c.prog, vm.Ohash160)
 	case "BytesEquals":
 		emitOpcode(c.prog, vm.Oequal)
+	case "ToScriptHash":
+		switch expr.Args[0].(type){
+		case *ast.BasicLit:
+			val := expr.Args[0].(*ast.BasicLit).Value
+			bs,err := common.AddressFromBase58(strings.Replace(val,"\"","",-1))
+			if err != nil{
+				log.Fatal("ToScriptHash parse failed")
+			}
+			emitBytes(c.prog,bs[:])
+		default:
+			log.Fatal("ToScriptHash method only support const string")
+		}
+	case "Cat":
+		emitOpcode(c.prog, vm.Ocat)
 	case "[]byte":
 		switch  expr.Args[0].(type){
 		case *ast.BasicLit:
@@ -870,6 +892,7 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 		default:
 			log.Fatal("toBytes method only support const string")
 		}
+
 	}
 }
 

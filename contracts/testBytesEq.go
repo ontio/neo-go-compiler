@@ -12,8 +12,8 @@ func Main(operation string, args []interface{}) bool {
 		}
 		addr1 := args[0].([]byte)
 		addr2 := args[1].([]byte)
-		res := tools.BytesEquals(addr1,addr2)
-		if res{
+		//res := tools.BytesEquals(addr1,addr2)
+		if tools.BytesEquals(addr1,addr2) == true{
 			runtime.RuntimeNotify([]interface{}{"address1 eqs address2"})
 			return true
 		}else{

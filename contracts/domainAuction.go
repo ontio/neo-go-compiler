@@ -5,6 +5,7 @@ import (
 	"neo-go-compiler/vm/api/storage"
 	"neo-go-compiler/vm/api/system"
 	"neo-go-compiler/vm/api/native"
+	"neo-go-compiler/vm/api/tools"
 )
 
 type transfer struct{
@@ -13,31 +14,13 @@ type transfer struct{
 	Amount int64
 }
 
-func bytesEquals(a []byte, b []byte) bool {
-	if a == nil && b == nil {
-		return true
-	}
-
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := 0; i < len(a); i++ {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
-
-}
-
 func transONT(from []byte, to []byte, amount int64) bool {
+	if runtime.RuntimeCheckWitness(from) == false{return false}
 	contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
 	param := transfer{from,to,amount}
 	ver := 1
 	bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
-	if bs != nil && bs[0] == 1{
+	if bs != nil && tools.BytesEquals(bs,[]byte("1")){
 		return true
 	}else{
 		return false
@@ -101,7 +84,7 @@ func Main(operation string, args []interface{}) bool {
 		}
 		owner := storage.GetStorage(ctx, url)
 
-		isOwner := bytesEquals(owner.([]byte), addr)
+		isOwner := tools.BytesEquals(owner.([]byte), addr)
 
 		if isOwner == false {
 			runtime.RuntimeNotify([]interface{}{"Not owner! "})
@@ -129,7 +112,7 @@ func Main(operation string, args []interface{}) bool {
 			return false
 		}
 		owner := storage.GetStorage(ctx, url)
-		isOwner := bytesEquals(owner.([]byte), selfAddr)
+		isOwner := tools.BytesEquals(owner.([]byte), selfAddr)
 		if isOwner == false {
 			runtime.RuntimeNotify([]interface{}{"url is not in sale "})
 			return false
@@ -196,7 +179,7 @@ func Main(operation string, args []interface{}) bool {
 			runtime.RuntimeNotify([]interface{}{"deal get Original_Owner failed!"})
 			return false
 		}
-		if bytesEquals(originOwner.([]byte),addr) == false{
+		if tools.BytesEquals(originOwner.([]byte),addr) == false{
 			runtime.RuntimeNotify([]interface{}{"deal not the origin owner!"})
 			return false
 		}
