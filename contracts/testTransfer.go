@@ -4,13 +4,14 @@ import (
 	"neo-go-compiler/vm/api/runtime"
 	"neo-go-compiler/vm/api/native"
 	"neo-go-compiler/vm/api/tools"
+	"neo-go-compiler/vm/api/appcall"
 )
 
-type transfer struct{
-	From []byte
-	To []byte
-	Amount int64
-}
+//type transfer struct{
+//	From []byte
+//	To []byte
+//	Amount int64
+//}
 
 
 func Main(operation string,args []interface{}) interface{}{
@@ -29,7 +30,7 @@ func Main(operation string,args []interface{}) interface{}{
 func transONT(from []byte, to []byte, amount int64) bool {
 	if runtime.RuntimeCheckWitness(from) == false{return false}
 	contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
-	param := transfer{from,to,amount}
+	param := appcall.State{from,to,amount}
 	ver := 1
 	bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
 	if bs != nil && tools.BytesEquals(bs,[]byte("1")){

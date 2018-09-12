@@ -1,6 +1,8 @@
 package appcall
 
-func AppCall(contractBytes []byte) interface{} { return nil }
+func AppCall(contractaddress string, method string, args []interface{}) interface{} { return nil }
+
+//func AppCall(args []interface{},method string,contractaddress []byte ) interface{} { return nil }
 
 type Contract struct {
 	Version byte

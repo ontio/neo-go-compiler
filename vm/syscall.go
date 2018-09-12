@@ -4,10 +4,10 @@ package vm
 // and the registerd VM interop API.
 var Syscalls = map[string]string{
 	//System API
-	"GetScriptContainer":     "System.ExecutionEngine.GetScriptContainer",
-	"GetExecutingScriptHash": "System.ExecutionEngine.GetExecutingScriptHash",
-	"GetCallingScriptHash":   "System.ExecutionEngine.GetCallingScriptHash",
-	"GetEntryScriptHash":     "System.ExecutionEngine.GetEntryScriptHash",
+	"GetScriptContainer":        "System.ExecutionEngine.GetScriptContainer",
+	"GetExecutingScriptHash":    "System.ExecutionEngine.GetExecutingScriptHash",
+	"GetCallingScriptHash":      "System.ExecutionEngine.GetCallingScriptHash",
+	"GetEntryScriptHash":        "System.ExecutionEngine.GetEntryScriptHash",
 	"GetBlockTransactionCount":  "System.Block.GetTransactionCount",
 	"GetBlockTransactions":      "System.Block.GetTransactions",
 	"GetBlockTransaction":       "System.Block.GetTransaction",

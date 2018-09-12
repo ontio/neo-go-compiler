@@ -90,8 +90,8 @@ func emitSyscall(w *bytes.Buffer, api string) error {
 }
 
 //todo add emitAppcall
-func emitAppcall(w *bytes.Buffer) error {
-	return emit(w, vm.Oappcall, nil)
+func emitAppcall(w *bytes.Buffer, addr []byte) error {
+	return emit(w, vm.Oappcall, addr)
 }
 
 func emitCall(w *bytes.Buffer, op vm.Opcode, label int16) error {

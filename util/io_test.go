@@ -64,14 +64,12 @@ func TestWriteVarUint100000000000(t *testing.T) {
 	assert.Equal(t, val, res)
 }
 
-func TestEq(t *testing.T){
+func TestEq(t *testing.T) {
 
 	a := []byte("abcde")
-	b := []byte{'a','b','c','d','e'}
-	assert.True(t,bytesEquals(a,b))
+	b := []byte{'a', 'b', 'c', 'd', 'e'}
+	assert.True(t, bytesEquals(a, b))
 }
-
-
 
 func bytesEquals(a []byte, b []byte) bool {
 	if a == nil && b == nil {

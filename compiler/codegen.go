@@ -10,12 +10,11 @@ import (
 	"log"
 
 	"encoding/json"
+	"github.com/ontio/ontology/common"
 	"math/rand"
 	"neo-go-compiler/vm"
 	"strconv"
-	"github.com/ontio/ontology/common"
 	"strings"
-	"fmt"
 )
 
 const mainIdent = "Main"
@@ -60,7 +59,6 @@ func (c *codegen) emitLoadConst(t types.TypeAndValue) {
 	switch typ := t.Type.Underlying().(type) {
 	case *types.Basic:
 		switch typ.Kind() {
-		//todo test type.Int64
 		case types.Int, types.UntypedInt, types.Int64:
 			if t.Value != nil {
 				val, _ := constant.Int64Val(t.Value)
@@ -170,7 +168,6 @@ func (c *codegen) convertFuncDecl(file *ast.File, decl *ast.FuncDecl) {
 		f = c.newFunc(decl)
 	}
 	c.scope = f
-	//todo fixme
 	//this function has bugs
 	//1. var a = someFunc()  will judged as void assignment
 	//2. how to solve the  a:= someFunc() ; someFunc()
@@ -232,6 +229,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 	// )
 
 	case *ast.RangeStmt:
+		// this need the opcode "KEYS" support
 		var (
 			fstart = c.newLabel()
 			fend   = c.newLabel()
@@ -435,7 +433,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		ast.Walk(c, n.Body)
 
 		if n.Else != nil {
-			// TODO: handle else statements.
 			// emitJmp(c.prog, vm.Ojmp, int16(lEnd))
 		}
 		c.setLabel(lElse)
@@ -510,33 +507,6 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(c, n.Y)
 			return nil
 
-		/*case token.EQL:
-		//todo test this branch
-		ast.Walk(c, n.X)
-		ast.Walk(c, n.Y)
-
-		//x == "value" case
-		if bl,err := n.Y.(*ast.BasicLit);err == true{
-			switch bl.Kind{
-			case token.INT, token.FLOAT:
-				emitOpcode(c.prog, vm.Onumequal)
-			default:
-				emitOpcode(c.prog, vm.Oequal)
-			}
-		}else{
-			// "value" == x
-			if bl,err := n.X.(*ast.BasicLit);err == true {
-				switch bl.Kind {
-				case token.INT, token.FLOAT:
-					emitOpcode(c.prog, vm.Onumequal)
-				default:
-					emitOpcode(c.prog, vm.Oequal)
-				}
-			}else{  //x == y case
-					emitOpcode(c.prog, vm.Oequal)
-				}
-		}
-		*/
 		default:
 			// The AST package will try to resolve all basic literals for us.
 			// If the typeinfo.Value is not nil we know that the expr is resolved
@@ -546,16 +516,16 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 			// const x = 10
 			// x + 2 will results into 12
 			tinfo := c.typeInfo.Types[n]
-			if tinfo.Value != nil{
+			if tinfo.Value != nil {
 				c.emitLoadConst(tinfo)
-					return nil
+				return nil
 			}
 
 			ast.Walk(c, n.X)
 			ast.Walk(c, n.Y)
 			//"+" for string concat
-			if tinfo.Type.Underlying().String() == "string"{
-				switch n.Op{
+			if tinfo.Type.Underlying().String() == "string" {
+				switch n.Op {
 				case token.ADD:
 					emitOpcode(c.prog, vm.Ocat)
 				}
@@ -605,11 +575,40 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				log.Fatalf("could not resolve type %v", n.Args[0])
 			}
 		default:
-			fmt.Println("not recongized...")
+			log.Fatalf("not recongized...")
 
 		}
 
 		// Handle the arguments
+
+		//add a special solution for appcall
+		//appcall should not push the first argument (contract address) to the stack
+		var appcallContractAddr []byte = nil
+		if isAppcall(f.name) {
+			contractAddress := n.Args[0]
+			switch contractAddress.(type) {
+			case *ast.Ident:
+				//get the real bytes[]
+				//todo support the var indent case of the contract address
+				log.Fatal("not support a variable contract address now")
+			case *ast.BasicLit:
+				addrStr := contractAddress.(*ast.BasicLit).Value
+				addr, err := common.AddressFromBase58(strings.Replace(addrStr, "\"", "", -1))
+				if err != nil {
+					addr, err = common.AddressFromHexString(strings.Replace(addrStr, "\"", "", -1))
+					if err != nil {
+						log.Fatal("not a valid base58 or Hex format address")
+					}
+				}
+				appcallContractAddr = addr[:]
+			default:
+				log.Fatal("not a supported address type")
+			}
+			//remove the first argument
+			n.Args = n.Args[1:]
+			numArgs -= 1
+		}
+
 		for _, arg := range n.Args {
 			ast.Walk(c, arg)
 		}
@@ -622,10 +621,16 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitInt(c.prog, 2)
 				emitOpcode(c.prog, vm.Oxswap)
 			}
-			if numArgs > 3 && !isSyscall(f.name)  {
+			//swap more than 3 args need more opcodes ,for example 4 args:
+			//A,B,C,D -> D,C,B,A
+			//1.xswap 3 -> D,B,C,A
+			//2.xswap 2 -> C,B,D,A
+			//3.swap    -> B,C,D,A
+			//4.xswap 2 -> D,C,B,A
+			//it will cost lots ongs on deploy,so currently, we only allow 3 args is normal methods
+			if numArgs > 3 && !isSyscall(f.name) {
 				log.Fatal("only support less than 3 args!")
 			}
-			//todo how to solve more than 3 args??
 		}
 
 		// c# compiler adds a NOP (0x61) before every function call. Dont think its relevant
@@ -642,8 +647,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		} else if isSyscall(f.name) {
 			c.convertSyscall(f.name)
 		} else if isAppcall(f.name) {
-			//todo modify appcall here
-			c.convertAppcall(f.name)
+			c.convertAppcall(f.name, appcallContractAddr)
 		} else {
 			emitCall(c.prog, vm.Ocall, int16(f.label))
 		}
@@ -769,7 +773,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 
 		case *ast.Ident: //todo  for loop a[i] == b[i] case, need more test
 			pos := c.scope.loadLocal(n.Index.(*ast.Ident).Name)
-			c.emitLoadLocalPos(pos)// get i
+			c.emitLoadLocalPos(pos) // get i
 			emitOpcode(c.prog, vm.Opickitem)
 
 		default:
@@ -824,8 +828,9 @@ func (c *codegen) convertSyscall(name string) {
 	emitOpcode(c.prog, vm.Onop) // @OPTIMIZE
 }
 
-func (c *codegen) convertAppcall(name string) {
-	emitAppcall(c.prog)
+func (c *codegen) convertAppcall(name string, address []byte) {
+
+	emitAppcall(c.prog, address)
 	emitOpcode(c.prog, vm.Onop) // @OPTIMIZE
 }
 
@@ -867,25 +872,25 @@ func (c *codegen) convertBuiltin(expr *ast.CallExpr) {
 	case "BytesEquals":
 		emitOpcode(c.prog, vm.Oequal)
 	case "ToScriptHash":
-		switch expr.Args[0].(type){
+		switch expr.Args[0].(type) {
 		case *ast.BasicLit:
 			val := expr.Args[0].(*ast.BasicLit).Value
-			bs,err := common.AddressFromBase58(strings.Replace(val,"\"","",-1))
-			if err != nil{
+			bs, err := common.AddressFromBase58(strings.Replace(val, "\"", "", -1))
+			if err != nil {
 				log.Fatal("ToScriptHash parse failed")
 			}
-			emitBytes(c.prog,bs[:])
+			emitBytes(c.prog, bs[:])
 		default:
 			log.Fatal("ToScriptHash method only support const string")
 		}
 	case "Cat":
 		emitOpcode(c.prog, vm.Ocat)
 	case "[]byte":
-		switch  expr.Args[0].(type){
+		switch expr.Args[0].(type) {
 		case *ast.BasicLit:
 			val := expr.Args[0].(*ast.BasicLit).Value
 			bs := []byte(val)
-			emitBytes(c.prog,bs)
+			emitBytes(c.prog, bs)
 		//case *ast.Ident:
 		//	agName :=  expr.Args[0].(*ast.Ident).Name
 		//	c.emitLoadLocal(agName)
@@ -1001,7 +1006,6 @@ func (c *codegen) convertToken(tok token.Token) {
 	case token.GEQ:
 		emitOpcode(c.prog, vm.Ogte)
 	case token.EQL:
-		//todo string or other object equality???
 		//only integer or int64 to emit onumequal
 		emitOpcode(c.prog, vm.Onumequal)
 	case token.NEQ:

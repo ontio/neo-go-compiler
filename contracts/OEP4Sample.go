@@ -93,6 +93,9 @@ func Main(operation string, args []interface{}) interface{} {
 		//runtime.RuntimeLog("==============")
 		return transferFrom(args)
 	}
+	runtime.RuntimeLog("unsupported method:" + operation)
+	runtime.RuntimeLog("len args:" )
+	runtime.RuntimeLog(len(args))
 
 	return false
 }
