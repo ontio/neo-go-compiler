@@ -1,1 +1,0 @@
-{"functions":[{"name":"Main","parameters":[{"name":"operation","type":"String"},{"name":"args","type":"ByteArray"}],"returntype":"Boolean"},{"name":"add","parameters":[{"name":"a","type":"int"},{"name":"b","type":"int"}],"returntype":"Boolean"},{"name":"compare","parameters":[{"name":"a","type":"int"},{"name":"b","type":"int"}],"returntype":"Boolean"}]}
