@@ -1,1 +1,0 @@
-{"functions":[{"name":"Main","parameters":[{"name":"operation","type":"String"},{"name":"args","type":"ByteArray"}],"returntype":"Boolean"},{"name":"init","parameters":null,"returntype":"Boolean"},{"name":"getTotalSupply","parameters":null,"returntype":"Boolean"}]}

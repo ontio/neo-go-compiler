@@ -1,6 +1,6 @@
-# Neo go compiler
+# Introduction 
 
-this compiler is forked from [CityOfZion/neo-go](https://github.com/CityOfZion/neo-go)
+this compiler is forked from [CityOfZion/neo-go](https://github.com/CityOfZion/neo-go), compile go smart contract code to avm file.
 
 ## How to use
 Use built binary file "neo-go-compile"
@@ -93,7 +93,7 @@ the following apis supports both Ontology and Neo
 | 22    | RuntimeDeserialize       | deserialize bytearray                      |
 
 
-## How to write smart contract in GO
+## How to write smart contract in golang
 
 You can write your smart contract code in any editors which provides the golang 
 grammar check.
@@ -101,12 +101,202 @@ grammar check.
 The entry function in golang contract must be like following:
 ```go
 func Main(operation string, args []interface{}) interface{} {
+	if operation == "someoperation1"{ 
+        do something 
+    }
+    if operation == "someoperation2"{
+        do something
+    }
+    ...
 }
-
-
-
 
 ```
 
+"operation" represents the actual method name to invoke
 
-To be continued...
+"args" represents the parameters to be passed in .
+
+### Supported Types
+
+Golang neovm contract is a subset of golang,  only support the following types:
+
+string , int , int64, []byte, byte, bool 
+
+
+
+### Not supported 
+
+1. Multiple return values
+2. Error
+3. for ... range   (Ontology need to support "KEYS" opcode)
+4. go routine
+5. functions with more than 3 parameters (to be optimized)
+6. get or set elements from a byte array
+
+
+
+### Address
+
+Generally, all addresses in smart contract should be ```[]byte```  
+
+1. As parameter: like C# and python ,you need to pass the Hex format address parameters .
+
+   ```
+   addr := args[0].([]byte)
+   ```
+
+   ​
+
+2. As constant variables
+
+   ```
+   contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+
+   ```
+
+3. Use tools.ToScriptHash()
+
+   ```
+   owner = tools.ToScriptHash("Ad4pjz2bqep4RhQrUAzMuZJkBC3qJ1tZuT")
+   ```
+
+   ***Note**: the parameter of ToScriptHash must be a constant string
+
+   ​
+
+### Storage
+
+first , you need to declare a storage context :
+
+Ontology
+
+```go
+ctx = storage.GetStorageContext()
+```
+
+NEO
+
+```go
+ctx = storage.GetContext()
+```
+
+
+
+then calling Put, Get or Delete method to access the storage
+
+Ontology
+
+```go
+storage.PutStorage(ctx, key, val)
+result := storage.GetStorage(ctx,key)
+storage.DeleteStorage(ctx,key)
+```
+
+NEO
+
+```
+storage.Put(ctx, key, val)
+result := storage.Get(ctx,key)
+storage.Delete(ctx,key)
+```
+
+
+
+### Transfer ONT/ONG
+
+In smart contract , you need to invoke native contract to transfer ONT and ONG
+
+```go
+func transONT(from []byte, to []byte, amount int64) bool {
+	if runtime.RuntimeCheckWitness(from) == false{return false}
+	contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+	param := appcall.State{from,to,amount}
+	ver := 1
+	bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
+	if bs != nil && tools.BytesEquals(bs,[]byte("1")){
+		return true
+	}else{
+		return false
+	}
+}
+
+```
+
+You can also define a struct to carry transfer parameters :
+
+```go
+type transfer struct{
+	From []byte
+	To []byte
+	Amount int64
+}
+```
+
+
+
+### AppCall
+
+In order to call an other smart contract, you need to use appcall.AppCall:
+
+```go
+//return appcall.AppCall("APPWgNbWvUdQjQxeN7RduYweH3caaM1LM1","transfer",args)
+return appcall.AppCall("83e69795f9c314a8c4f483e221927f41285a8653","transfer",args)
+
+```
+
+the first parameter must be constant string, either hex or base58 format address is acceptable.
+
+***Note: Do not define the address string like this:**
+
+```go
+addr := "APPWgNbWvUdQjQxeN7RduYweH3caaM1LM1"
+appcall.AppCall(addr,"transfer",args)
+```
+
+
+
+the second parameter is method name to call.
+
+the last parameter is the arguments .
+
+ 
+
+### Tools
+
+Here are some utility functions :
+
+BytesEquals: to compare to byte arrays equality. (you can't loop the byte array to compare every single byte in neovm)
+
+```go
+	if bs != nil && tools.BytesEquals(bs,[]byte("1")){
+		return true
+	}else{
+		return false
+	}
+```
+
+ToScriptHash: refer to the Address section
+
+Cat: concat two byte arrays :
+
+```go
+newbytes:=tools.Cat(transfer_prefix, owner)
+```
+
+
+
+### Other restrictions
+
+expressions with in ```if``` statement must compare explicitly
+
+```go
+if runtime.RuntimeCheckWitness(from) == false {
+		return false
+}
+```
+
+
+
+### Examples:
+
+please check the examples under "contracts" directory
