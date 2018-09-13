@@ -1,10 +1,10 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/runtime"
-	"neo-go-compiler/vm/api/storage"
-	"neo-go-compiler/vm/api/system"
-	"neo-go-compiler/vm/api/tools"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/storage"
+	"github.com/ontio/neo-go-compiler/vm/api/system"
+	"github.com/ontio/neo-go-compiler/vm/api/tools"
 )
 
 const (

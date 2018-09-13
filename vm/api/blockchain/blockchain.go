@@ -1,6 +1,6 @@
 package blockchain
 
-import "neo-go-compiler/vm/api/types"
+import "github.com/ontio/neo-go-compiler/vm/api/types"
 
 // GetHeight returns current block height.
 func GetHeight() uint { return 0 }

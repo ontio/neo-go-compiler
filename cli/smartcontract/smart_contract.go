@@ -2,7 +2,7 @@ package smartcontract
 
 import (
 	"github.com/urfave/cli"
-	"neo-go-compiler/compiler"
+	"github.com/ontio/neo-go-compiler/compiler"
 )
 
 const (

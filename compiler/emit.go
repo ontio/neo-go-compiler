@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"neo-go-compiler/util"
-	"neo-go-compiler/vm"
+	"github.com/ontio/neo-go-compiler/util"
+	"github.com/ontio/neo-go-compiler/vm"
 )
 
 func emit(w *bytes.Buffer, op vm.Opcode, b []byte) error {

@@ -1,6 +1,6 @@
 package contracts
 
-import "neo-go-compiler/vm/api/runtime"
+import "github.com/ontio/neo-go-compiler/vm/api/runtime"
 
 func Main(operation string, args []interface{}) interface{} {
 

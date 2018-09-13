@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	"neo-go-compiler/cli/smartcontract"
+	"github.com/ontio/neo-go-compiler/cli/smartcontract"
 	"os"
 )
 

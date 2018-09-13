@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/appcall"
-	"neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/appcall"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
 )
 
 func Main(operation string,args []interface{})interface{}{

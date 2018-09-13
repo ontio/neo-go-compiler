@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/runtime"
-	"neo-go-compiler/vm/api/storage"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/storage"
 )
 
 type TToken struct {
@@ -31,23 +31,23 @@ func Main(operation string, args []interface{}) bool {
 	if operation == "init" {
 		total := storage.Get(ctx, token_key)
 		if total != nil {
-			runtime.Notify("Already initialized")
+			runtime.Notify([]interface{}{"Already initialized"})
 			return false
 		} else {
 			storage.Put(ctx, token_key, token.TotalSupply)
-			runtime.Notify("init succeed!")
+			runtime.Notify([]interface{}{"init succeed!"})
 			return true
 		}
 	}
 
 	if operation == "getTotalSupply" {
 		totalSupply := storage.Get(ctx, token_key)
-		runtime.Notify(totalSupply)
+		runtime.Notify([]interface{}{totalSupply})
 		return true
 	}
 
 
 
-	runtime.Notify("operation not supported")
+	runtime.Notify([]interface{}{"operation not supported"})
 	return false
 }

@@ -1,6 +1,6 @@
 package runtime
 
-import "neo-go-compiler/vm/api/types"
+import "github.com/ontio/neo-go-compiler/vm/api/types"
 
 // CheckWitness verifies if the invoker is the owner of the contract.
 func CheckWitness(hash []byte) bool {

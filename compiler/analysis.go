@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"golang.org/x/tools/go/loader"
-	"neo-go-compiler/vm"
+	"github.com/ontio/neo-go-compiler/vm"
 )
 
 var (

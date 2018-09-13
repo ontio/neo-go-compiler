@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"github.com/ontio/ontology/common"
 	"math/rand"
-	"neo-go-compiler/vm"
+	"github.com/ontio/neo-go-compiler/vm"
 	"strconv"
 	"strings"
 )

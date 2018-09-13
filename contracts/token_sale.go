@@ -1,8 +1,8 @@
 package tokensale
 
 import (
-	"github.com/CityOfZion/neo-go/pkg/vm/api/runtime"
-	"github.com/CityOfZion/neo-go/pkg/vm/api/storage"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/storage"
 )
 
 const (

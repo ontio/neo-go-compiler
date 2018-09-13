@@ -1,10 +1,10 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/runtime"
-	"neo-go-compiler/vm/api/native"
-	"neo-go-compiler/vm/api/tools"
-	"neo-go-compiler/vm/api/appcall"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/native"
+	"github.com/ontio/neo-go-compiler/vm/api/tools"
+	"github.com/ontio/neo-go-compiler/vm/api/appcall"
 )
 
 //type transfer struct{

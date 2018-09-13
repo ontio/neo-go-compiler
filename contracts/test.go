@@ -3,7 +3,7 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
 )
 
 
@@ -20,13 +20,13 @@ func Main(operation string, args []interface{}) bool {
 		runtime.Notify(args)
 
 		a := args[0].(int)
-		runtime.Notify(a)
+		runtime.Notify([]interface{}{a})
 
 		b := args[1].(int)
-		runtime.Notify(b)
+		runtime.Notify([]interface{}{b})
 
 		res := Add(a,b)
-		runtime.Notify(res)
+		runtime.Notify([]interface{}{res})
 		return true
 	}
 
@@ -38,7 +38,7 @@ func Main(operation string, args []interface{}) bool {
 		b := args[1].(int)
 
 		res :=  Compare(a,b)
-		runtime.Notify(res)
+		runtime.Notify([]interface{}{res})
 		return true
 	}
 

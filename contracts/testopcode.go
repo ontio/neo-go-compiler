@@ -1,12 +1,12 @@
 package contracts
 
-import "neo-go-compiler/vm/api/runtime"
+import "github.com/ontio/neo-go-compiler/vm/api/runtime"
 
 func Main(operation string, args []interface{}) bool {
 
 	if operation == "invoke" {
 		s := "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
-		runtime.Notify(s)
+		runtime.Notify([]interface{}{s})
 	}
 
 	if operation == "loop"{
@@ -20,9 +20,9 @@ func Main(operation string, args []interface{}) bool {
 
 		a,b  := owner[0],owner[1]
 		if a == b {
-			runtime.Notify("yes")
+			runtime.Notify([]interface{}{"yes"})
 		}else{
-			runtime.Notify("no")
+			runtime.Notify([]interface{}{"no"})
 		}
 
 

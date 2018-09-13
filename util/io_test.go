@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
 )
 
 func TestWriteVarUint1(t *testing.T) {

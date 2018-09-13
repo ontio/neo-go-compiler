@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"neo-go-compiler/vm/api/runtime"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
 )
 
 var(
