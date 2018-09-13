@@ -15,8 +15,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"golang.org/x/tools/go/loader"
 	"github.com/ontio/neo-go-compiler/vm"
+	"golang.org/x/tools/go/loader"
 )
 
 const fileExt = "avm"

@@ -130,8 +130,7 @@ string , int , int64, []byte, byte, bool
 2. Error
 3. for ... range   (Ontology need to support "KEYS" opcode)
 4. go routine
-5. functions with more than 3 parameters (to be optimized)
-6. get or set elements from a byte array
+5. get or set elements from a byte array
 
 
 
@@ -212,7 +211,7 @@ func transONT(from []byte, to []byte, amount int64) bool {
 	contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
 	param := appcall.State{from,to,amount}
 	ver := 1
-	bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
+	bs :=native.Invoke(ver,contractAddr,"transfer",[]interface{}{param})
 	if bs != nil && tools.BytesEquals(bs,[]byte("1")){
 		return true
 	}else{
@@ -225,11 +224,13 @@ func transONT(from []byte, to []byte, amount int64) bool {
 You can also define a struct to carry transfer parameters :
 
 ```go
-type transfer struct{
+type transferParam struct{
 	From []byte
 	To []byte
 	Amount int64
 }
+...
+param := transferParam(from,to,amount)
 ```
 
 
@@ -239,8 +240,8 @@ type transfer struct{
 In order to call an other smart contract, you need to use appcall.AppCall:
 
 ```go
-//return appcall.AppCall("APPWgNbWvUdQjQxeN7RduYweH3caaM1LM1","transfer",args)
-return appcall.AppCall("83e69795f9c314a8c4f483e221927f41285a8653","transfer",args)
+ appcall.AppCall("APPWgNbWvUdQjQxeN7RduYweH3caaM1LM1","transfer",args)
+ appcall.AppCall("83e69795f9c314a8c4f483e221927f41285a8653","transfer",args)
 
 ```
 

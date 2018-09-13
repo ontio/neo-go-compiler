@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/ontio/neo-go-compiler/vm/api/runtime"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWriteVarUint1(t *testing.T) {

@@ -19,7 +19,8 @@ func transONT(from []byte, to []byte, amount int64) bool {
 	contractAddr:=[]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
 	param := transfer{from,to,amount}
 	ver := 1
-	bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
+	//bs :=native.Invoke([]interface{}{param},"transfer",contractAddr,ver)
+	bs :=native.Invoke(ver,contractAddr,"transfer",[]interface{}{param})
 	if bs != nil && tools.BytesEquals(bs,[]byte("1")){
 		return true
 	}else{

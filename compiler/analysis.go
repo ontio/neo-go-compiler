@@ -6,8 +6,8 @@ import (
 	"go/types"
 	"log"
 
-	"golang.org/x/tools/go/loader"
 	"github.com/ontio/neo-go-compiler/vm"
+	"golang.org/x/tools/go/loader"
 )
 
 var (

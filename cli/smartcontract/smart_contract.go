@@ -1,8 +1,8 @@
 package smartcontract
 
 import (
-	"github.com/urfave/cli"
 	"github.com/ontio/neo-go-compiler/compiler"
+	"github.com/urfave/cli"
 )
 
 const (

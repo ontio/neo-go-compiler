@@ -10,9 +10,9 @@ import (
 	"log"
 
 	"encoding/json"
+	"github.com/ontio/neo-go-compiler/vm"
 	"github.com/ontio/ontology/common"
 	"math/rand"
-	"github.com/ontio/neo-go-compiler/vm"
 	"strconv"
 	"strings"
 )
@@ -584,7 +584,7 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 		//add a special solution for appcall
 		//appcall should not push the first argument (contract address) to the stack
 		var appcallContractAddr []byte = nil
-		if isAppcall(f.name) {
+		if f != nil && isAppcall(f.name) {
 			contractAddress := n.Args[0]
 			switch contractAddress.(type) {
 			case *ast.Ident:
@@ -621,15 +621,25 @@ func (c *codegen) Visit(node ast.Node) ast.Visitor {
 				emitInt(c.prog, 2)
 				emitOpcode(c.prog, vm.Oxswap)
 			}
-			//swap more than 3 args need more opcodes ,for example 4 args:
-			//A,B,C,D -> D,C,B,A
-			//1.xswap 3 -> D,B,C,A
-			//2.xswap 2 -> C,B,D,A
-			//3.swap    -> B,C,D,A
-			//4.xswap 2 -> D,C,B,A
-			//it will cost lots ongs on deploy,so currently, we only allow 3 args is normal methods
-			if numArgs > 3 && !isSyscall(f.name) {
-				log.Fatal("only support less than 3 args!")
+
+			if numArgs > 3 {
+				halfP := int(numArgs / 2)
+				for i := 0; i < halfP; i++ {
+					saveto := numArgs - 1 - i
+					emitInt(c.prog, int64(saveto))
+					emitOpcode(c.prog, vm.Opick)
+
+					emitInt(c.prog, int64(i+1))
+					emitOpcode(c.prog, vm.Opick)
+
+					emitInt(c.prog, int64(saveto+2))
+					emitOpcode(c.prog, vm.Oxswap)
+					emitOpcode(c.prog, vm.Odrop)
+
+					emitInt(c.prog, int64(i+1))
+					emitOpcode(c.prog, vm.Oxswap)
+					emitOpcode(c.prog, vm.Odrop)
+				}
 			}
 		}
 

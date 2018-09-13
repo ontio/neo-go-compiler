@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/urfave/cli"
 	"github.com/ontio/neo-go-compiler/cli/smartcontract"
+	"github.com/urfave/cli"
 	"os"
 )
 
