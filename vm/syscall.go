@@ -37,6 +37,12 @@ var Syscalls = map[string]string{
 	"RuntimeSerialize":          "System.Runtime.Serialize",
 	"RuntimeDeserialize":        "System.Runtime.Deserialize",
 
+	//new for ONT
+	"Base58ToAddress":			 "System.Runtime.Base58ToAddress",
+	"AddressToBase58":			 "System.Runtime.AddressToBase58",
+	"VerifyBase58":				 "System.Runtime.VerifyBase58",
+
+
 	// Storage API for neo
 	"GetContext": "Neo.Storage.GetContext",
 	"Put":        "Neo.Storage.Put",

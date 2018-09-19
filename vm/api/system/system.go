@@ -18,3 +18,7 @@ func GetContract(hash interface{}) interface{}  { return nil }
 func GetTransactionHeight(hash interface{}) int { return 0 }
 
 func GetStorage() interface{} { return nil }
+
+func Base58ToAddress(base58str string) []byte {return nil}
+func AddressToBase58(addr []byte) string {return ""}
+func VerifyBase58() bool { return true}
