@@ -55,7 +55,7 @@ var Syscalls = map[string]string{
 	"GetCurrentBlock": "Neo.Runtime.GetCurrentBlock",
 	"GetTime":         "Neo.Runtime.GetTime",
 	"Notify":          "Neo.Runtime.Notify",
-	"Log":             "Neo.Runtime.Log",
+	"Log":             "System.Runtime.Log",
 
 	//Ont API
 	"Invoke":                   "Ontology.Native.Invoke",
@@ -69,5 +69,6 @@ var Syscalls = map[string]string{
 	"GetTransactionAttributes": "Ontology.Transaction.GetAttributes",
 	"CreateContract":           "Ontology.Contract.Create",
 	"MigrateContract":          "Ontology.Contract.Migrate",
+	"DestroyContract":          "System.Contract.Destroy",
 	"GetContractScript":        "Ontology.Contract.GetScript",
 }
