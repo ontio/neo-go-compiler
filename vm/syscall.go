@@ -55,7 +55,7 @@ var Syscalls = map[string]string{
 	"GetCurrentBlock": "Neo.Runtime.GetCurrentBlock",
 	"GetTime":         "Neo.Runtime.GetTime",
 	"Notify":          "Neo.Runtime.Notify",
-	"Log":             "System.Runtime.Log",
+	"Log":             "Neo.Runtime.Log",
 
 	//Ont API
 	"Invoke":                   "Ontology.Native.Invoke",
