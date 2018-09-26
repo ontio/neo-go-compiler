@@ -36,6 +36,7 @@ var Syscalls = map[string]string{
 	"RuntimeGetTrigger":         "System.Runtime.GetTrigger",
 	"RuntimeSerialize":          "System.Runtime.Serialize",
 	"RuntimeDeserialize":        "System.Runtime.Deserialize",
+	"DestroyContract":           "System.Contract.Destroy",
 
 	//new for ONT
 	"Base58ToAddress":			 "System.Runtime.Base58ToAddress",
@@ -69,6 +70,5 @@ var Syscalls = map[string]string{
 	"GetTransactionAttributes": "Ontology.Transaction.GetAttributes",
 	"CreateContract":           "Ontology.Contract.Create",
 	"MigrateContract":          "Ontology.Contract.Migrate",
-	"DestroyContract":          "System.Contract.Destroy",
 	"GetContractScript":        "Ontology.Contract.GetScript",
 }
