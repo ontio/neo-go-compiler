@@ -69,5 +69,6 @@ var Syscalls = map[string]string{
 	"GetTransactionAttributes": "Ontology.Transaction.GetAttributes",
 	"CreateContract":           "Ontology.Contract.Create",
 	"MigrateContract":          "Ontology.Contract.Migrate",
+	"DestroyContract":          "System.Contract.Destroy",
 	"GetContractScript":        "Ontology.Contract.GetScript",
 }

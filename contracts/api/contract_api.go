@@ -2,26 +2,18 @@ package api
 
 import (
 	"github.com/ontio/neo-go-compiler/vm/api/contract"
+	"github.com/ontio/neo-go-compiler/vm/api/runtime"
 )
 
 func Main(operation string, args []interface{}) bool {
 	if operation == "Destroy"{
-		return DestroyContract()
+		return Destroy()
 	}
-	if operation == "Migrate" {
-		code := args[0].([]byte)
-		return Migrate(code)
-	}
-
+	return true
 }
 
-func DestroyContract() bool {
-	//TODO
-	//contract.
-	return false
-}
-
-func Migrate(code []byte) bool {
-	contract.MigrateContract(code)
+func Destroy() bool {
+	res := contract.DestroyContract()
+	runtime.Notify([]interface{}{res})
 	return true
 }
